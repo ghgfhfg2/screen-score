@@ -1,0 +1,126 @@
+---
+---
+
+@import "minima";
+
+:root {
+  --bg: #0b1020;
+  --panel: #121a31;
+  --panel-soft: #17213f;
+  --text: #eaf0ff;
+  --muted: #95a3c7;
+  --line: rgba(255, 255, 255, 0.12);
+  --accent: #7c9bff;
+  --accent-2: #5eead4;
+}
+
+body.modern-ui {
+  background: radial-gradient(1200px 500px at 20% -10%, #25335e 0%, transparent 60%),
+    radial-gradient(1200px 600px at 100% 0%, #20345f 0%, transparent 50%),
+    var(--bg);
+  color: var(--text);
+}
+
+.site-header,
+.site-footer {
+  background: rgba(8, 12, 26, 0.75);
+  backdrop-filter: blur(10px);
+  border-color: var(--line);
+}
+
+.site-title,
+.site-nav .page-link,
+.post-link {
+  color: var(--text) !important;
+}
+
+.post-meta,
+.footer-col,
+.site-footer,
+.page-content p,
+.page-content li {
+  color: var(--muted);
+}
+
+.page-content .wrapper {
+  max-width: 1100px;
+}
+
+.page-content h1,
+.page-content h2,
+.page-content h3 {
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+/* 트렌디한 데이터 카드 테이블 */
+.page-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--panel) 0%, #101833 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.page-content thead th {
+  background: linear-gradient(90deg, rgba(124, 155, 255, 0.18), rgba(94, 234, 212, 0.1));
+  color: #fff;
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-content th,
+.page-content td {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+  vertical-align: middle;
+}
+
+.page-content tbody tr:hover {
+  background: var(--panel-soft);
+}
+
+.page-content tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.page-content img {
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* 시청률 추이 섹션 */
+.page-content details {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 10px 14px;
+  margin: 14px 0;
+}
+
+.page-content summary {
+  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
+}
+
+.page-content a {
+  color: #c5d7ff;
+}
+
+.page-content a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+@media (max-width: 860px) {
+  .page-content table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
