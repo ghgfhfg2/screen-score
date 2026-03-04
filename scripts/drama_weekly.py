@@ -170,7 +170,7 @@ def render_table(rows, prev_map, thumbnail_map):
     sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 썸네일 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
+    lines.append("| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 |")
     lines.append("|---:|---|---|---|---:|---:|")
 
     for i, r in enumerate(sorted_rows, start=1):
