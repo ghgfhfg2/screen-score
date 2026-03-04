@@ -35,3 +35,12 @@ tags: [weekly, naver, nielsen]
 <details class="trend-details" id="trend-9"><summary><span class="trend-title">우주를 줄게</span></summary><div class="trend-meta"><span>최신 <strong>1.400%</strong></span><span>최고 <strong>1.900%</strong></span><span>평균 <strong>1.562%</strong></span></div><div class="trend-table-wrap"><table class="trend-table"><thead><tr><th>회차</th><th>방영일</th><th>시청률(%)</th></tr></thead><tbody><tr><td>1회</td><td>02.04.</td><td>1.900</td></tr><tr><td>2회</td><td>02.05.</td><td>1.300</td></tr><tr><td>3회</td><td>02.11.</td><td>1.800</td></tr><tr><td>4회</td><td>02.12.</td><td>1.500</td></tr><tr><td>5회</td><td>02.18.</td><td>1.300</td></tr><tr><td>6회</td><td>02.19.</td><td>1.400</td></tr><tr><td>7회</td><td>02.25.</td><td>1.900</td></tr><tr><td>8회</td><td>02.26.</td><td>1.400</td></tr></tbody></table></div></details>
 <details class="trend-details" id="trend-10"><summary><span class="trend-title">신이랑 법률사무소 개업식</span></summary><p class="trend-empty">시청률 추이 데이터를 찾지 못했습니다.</p></details>
 </section>
+
+---
+
+### 데이터 출처 및 기준
+
+- 출처: **닐슨코리아(Nielsen Korea)**, 네이버 검색 결과(지상파/종합편성/케이블) 확인값 기반
+- 집계 기준: 주간 단위 시청률
+- 수집 일시: 2026-03-04 18:10 KST
+- 안내: 본 콘텐츠는 정보 제공 목적이며, 최종 수치는 원출처 공지값을 기준으로 확인해 주세요.

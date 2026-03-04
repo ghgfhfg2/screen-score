@@ -246,7 +246,9 @@ def render_table(rows, prev_map, thumbnail_map):
 
 
 def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
-    today = dt.date.today().isoformat()
+    now = dt.datetime.now()
+    today = now.date().isoformat()
+    collected_at = now.strftime("%Y-%m-%d %H:%M KST")
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
     # 이미지 컬럼 제거: 포스터 조회 로직 비활성화
@@ -309,6 +311,15 @@ tags: [weekly, naver, nielsen]
 
 {chr(10).join(trend_sections)}
 </section>
+
+---
+
+### 데이터 출처 및 기준
+
+- 출처: **닐슨코리아(Nielsen Korea)**, 네이버 검색 결과(지상파/종합편성/케이블) 확인값 기반
+- 집계 기준: 주간 단위 시청률
+- 수집 일시: {collected_at}
+- 안내: 본 콘텐츠는 정보 제공 목적이며, 최종 수치는 원출처 공지값을 기준으로 확인해 주세요.
 """
     post_path.write_text(content, encoding="utf-8")
     return post_path
