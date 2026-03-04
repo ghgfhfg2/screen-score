@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import datetime as dt
+import html
 import re
 import urllib.request
 from pathlib import Path
@@ -25,14 +26,23 @@ def fetch_text(url: str) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=20) as res:
         raw = res.read().decode("utf-8", errors="ignore")
-    # remove tags to improve regex hit chance
-    text = re.sub(r"<[^>]+>", " ", raw)
-    text = re.sub(r"\s+", " ", text)
-    return text
+
+    # 전체 HTML이 아니라, 해당 URL 검색결과 안의 "Nielsen Korea ... 순위:" 블록만 파싱
+    block_match = re.search(r"Nielsen Korea.*?순위:\s*1,.*?</span>", raw, flags=re.S)
+    if not block_match:
+        raise SystemExit("수집 실패: Nielsen Korea 순위 블록을 찾지 못했습니다.")
+
+    block = block_match.group(0)
+    block = re.sub(r"<mark>|</mark>", "", block)
+    block = re.sub(r"<[^>]+>", " ", block)
+    block = html.unescape(block)
+    block = re.sub(r"\s+", " ", block)
+    return block
 
 
 def collect_rows(text: str):
     seen = set()
+    seen_rank = set()
     out = []
     for m in ROW_RE.finditer(text):
         rank = int(m.group(1))
@@ -45,10 +55,16 @@ def collect_rows(text: str):
             continue
 
         key = (rank, channel, title)
-        if key in seen:
+        if key in seen or rank in seen_rank:
             continue
         seen.add(key)
+        seen_rank.add(rank)
         out.append({"rank": rank, "channel": channel, "title": title, "rating": rating})
+
+        # URL 결과 카드 기준 Top10만 사용
+        if len(out) >= 10:
+            break
+
     return sorted(out, key=lambda x: x["rank"])
 
 
