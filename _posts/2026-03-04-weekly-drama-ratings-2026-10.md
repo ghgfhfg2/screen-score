@@ -8,15 +8,199 @@ tags: [weekly, naver, nielsen]
 
 이번 주 드라마 시청률 요약입니다.
 
-| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 |
-|---:|---|---|---|---:|---:|
-| 1 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260113_6%2F1768263790706abxnV_JPEG%2F57_39949898_poster_image_1768263790698.jpg" alt="사랑을 처방해 드립니다" width="72" /> | KBS2 | 사랑을 처방해 드립니다 | 16.500 | NEW |
-| 2 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251002_10%2F17593841535924pawH_JPEG%2F57_37577952_poster_image_1759384153572.jpg" alt="마리와 별난 아빠들" width="72" /> | KBS1 | 마리와 별난 아빠들 | 11.400 | NEW |
-| 3 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251215_88%2F1765759041258Liyba_JPEG%2F54b677e63b21f99e00ed5b64c94c65cf.jpg" alt="언더커버 미쓰홍" width="72" /> | tvN | 언더커버 미쓰홍 | 11.200 | NEW |
-| 4 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260226_127%2F1772085404039jPk7X_JPEG%2Fb32b118971c672c07e476f27aae3df1e.jpg" alt="붉은 진주" width="72" /> | KBS2 | 붉은 진주 | 8.800 | NEW |
-| 5 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251211_63%2F1765416645066Kwt3b_JPEG%2F231c006d13d55a0ff93aaca0dbca4e90.jpg" alt="첫 번째 남자" width="72" /> | MBC | 첫 번째 남자 | 5.500 | NEW |
-| 6 | - | ENA | 아너 : 그녀들의 법정 | 4.300 | NEW |
-| 7 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260107_154%2F1767748608342K15jJ_JPEG%2F0f334157ea5cb80f1375f6d5a8b11393.jpg" alt="오늘부터 인간입니다만" width="72" /> | SBS | 오늘부터 인간입니다만 | 3.700 | NEW |
-| 8 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260127_74%2F176946930464321JvS_JPEG%2Fed9076c5ef92bcf68da3897d4b9037c9.jpg" alt="미혼남녀의 효율적 만남" width="72" /> | JTBC | 미혼남녀의 효율적 만남 | 3.200 | NEW |
-| 9 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260114_162%2F1768372227888pKoN5_JPEG%2F916fd04d23f703975095441e32d1cd3f.jpg" alt="우주를 줄게" width="72" /> | tvN | 우주를 줄게 | 1.600 | NEW |
-| 10 | - | SBS | 신이랑 법률사무소 개업식 | 1.400 | NEW |
+| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |
+|---:|---|---|---|---:|---:|---|
+| 1 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260113_6%2F1768263790706abxnV_JPEG%2F57_39949898_poster_image_1768263790698.jpg" alt="사랑을 처방해 드립니다" width="72" /> | KBS2 | 사랑을 처방해 드립니다 | 16.500 | NEW | [시청률 추이 보기](#trend-1) |
+| 2 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251002_10%2F17593841535924pawH_JPEG%2F57_37577952_poster_image_1759384153572.jpg" alt="마리와 별난 아빠들" width="72" /> | KBS1 | 마리와 별난 아빠들 | 11.400 | NEW | [시청률 추이 보기](#trend-2) |
+| 3 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251215_88%2F1765759041258Liyba_JPEG%2F54b677e63b21f99e00ed5b64c94c65cf.jpg" alt="언더커버 미쓰홍" width="72" /> | tvN | 언더커버 미쓰홍 | 11.200 | NEW | [시청률 추이 보기](#trend-3) |
+| 4 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260226_127%2F1772085404039jPk7X_JPEG%2Fb32b118971c672c07e476f27aae3df1e.jpg" alt="붉은 진주" width="72" /> | KBS2 | 붉은 진주 | 8.800 | NEW | [시청률 추이 보기](#trend-4) |
+| 5 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20251211_63%2F1765416645066Kwt3b_JPEG%2F231c006d13d55a0ff93aaca0dbca4e90.jpg" alt="첫 번째 남자" width="72" /> | MBC | 첫 번째 남자 | 5.500 | NEW | [시청률 추이 보기](#trend-5) |
+| 6 | - | ENA | 아너 : 그녀들의 법정 | 4.300 | NEW | [시청률 추이 보기](#trend-6) |
+| 7 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260107_154%2F1767748608342K15jJ_JPEG%2F0f334157ea5cb80f1375f6d5a8b11393.jpg" alt="오늘부터 인간입니다만" width="72" /> | SBS | 오늘부터 인간입니다만 | 3.700 | NEW | [시청률 추이 보기](#trend-7) |
+| 8 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260127_74%2F176946930464321JvS_JPEG%2Fed9076c5ef92bcf68da3897d4b9037c9.jpg" alt="미혼남녀의 효율적 만남" width="72" /> | JTBC | 미혼남녀의 효율적 만남 | 3.200 | NEW | [시청률 추이 보기](#trend-8) |
+| 9 | <img src="https://search.pstatic.net/common?type=f&size=176x244&quality=100&direct=true&src=https%3A%2F%2Fcsearch-phinf.pstatic.net%2F20260114_162%2F1768372227888pKoN5_JPEG%2F916fd04d23f703975095441e32d1cd3f.jpg" alt="우주를 줄게" width="72" /> | tvN | 우주를 줄게 | 1.600 | NEW | [시청률 추이 보기](#trend-9) |
+| 10 | - | SBS | 신이랑 법률사무소 개업식 | 1.400 | NEW | [시청률 추이 보기](#trend-10) |
+
+## 드라마별 시청률 추이
+
+<details id="trend-1">
+<summary><strong>시청률 추이 보기 - 사랑을 처방해 드립니다</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 01.31. | 14.300 |
+| 2회 | 02.01. | 16.800 |
+| 3회 | 02.07. | 15.700 |
+| 4회 | 02.08. | 17.200 |
+| 5회 | 02.14. | 14.500 |
+| 6회 | 02.15. | 14.500 |
+| 7회 | 02.21. | 16.100 |
+| 8회 | 02.22. | 17.100 |
+| 9회 | 02.28. | 15.700 |
+| 10회 | 03.01. | 17.400 |
+
+</details>
+<details id="trend-2">
+<summary><strong>시청률 추이 보기 - 마리와 별난 아빠들</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 73회 | 01.21. | 11.100 |
+| 74회 | 01.22. | 11.300 |
+| 75회 | 01.23. | 10.300 |
+| 76회 | 01.26. | 11.100 |
+| 77회 | 01.27. | 10.700 |
+| 78회 | 01.28. | 10.400 |
+| 79회 | 01.29. | 10.900 |
+| 80회 | 01.30. | 10.500 |
+| 81회 | 02.02. | 11.100 |
+| 82회 | 02.03. | 11.200 |
+| 83회 | 02.04. | 10.600 |
+| 84회 | 02.05. | 11.600 |
+| 85회 | 02.06. | 10.800 |
+| 86회 | 02.09. | 11.300 |
+| 87회 | 02.10. | 11.000 |
+| 88회 | 02.11. | 11.000 |
+| 89회 | 02.12. | 11.700 |
+| 90회 | 02.13. | 11.100 |
+| 91회 | 02.16. | 8.300 |
+| 92회 | 02.17. | 7.400 |
+| 93회 | 02.18. | 10.800 |
+| 94회 | 02.19. | 11.500 |
+| 95회 | 02.20. | 11.200 |
+| 96회 | 02.23. | 11.600 |
+| 97회 | 02.24. | 11.200 |
+| 98회 | 02.25. | 10.800 |
+| 99회 | 02.26. | 11.600 |
+| 100회 | 02.27. | 11.600 |
+| 101회 | 03.02. | 12.600 |
+| 102회 | 03.03. | 11.800 |
+
+</details>
+<details id="trend-3">
+<summary><strong>시청률 추이 보기 - 언더커버 미쓰홍</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 01.17. | 3.500 |
+| 2회 | 01.18. | 5.700 |
+| 3회 | 01.24. | 5.200 |
+| 4회 | 01.25. | 7.400 |
+| 5회 | 01.31. | 5.900 |
+| 6회 | 02.01. | 8.000 |
+| 7회 | 02.07. | 7.500 |
+| 8회 | 02.08. | 9.400 |
+| 9회 | 02.14. | 7.100 |
+| 10회 | 02.15. | 8.600 |
+| 11회 | 02.21. | 10.600 |
+| 12회 | 02.22. | 10.100 |
+| 13회 | 02.28. | 10.600 |
+| 14회 | 03.01. | 11.800 |
+
+</details>
+<details id="trend-4">
+<summary><strong>시청률 추이 보기 - 붉은 진주</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 02.23. | 8.700 |
+| 2회 | 02.24. | 8.800 |
+| 3회 | 02.25. | 8.500 |
+| 4회 | 02.26. | 8.900 |
+| 5회 | 02.27. | 9.100 |
+| 6회 | 03.02. | 9.200 |
+| 7회 | 03.03. | 9.400 |
+
+</details>
+<details id="trend-5">
+<summary><strong>시청률 추이 보기 - 첫 번째 남자</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 27회 | 01.21. | 5.300 |
+| 28회 | 01.22. | 5.400 |
+| 29회 | 01.23. | 4.800 |
+| 30회 | 01.26. | 5.200 |
+| 31회 | 01.27. | 5.300 |
+| 32회 | 01.28. | 5.100 |
+| 33회 | 01.29. | 5.100 |
+| 34회 | 01.30. | 5.000 |
+| 35회 | 02.02. | 5.200 |
+| 36회 | 02.03. | 5.100 |
+| 37회 | 02.04. | 5.300 |
+| 38회 | 02.05. | 5.400 |
+| 39회 | 02.06. | 5.100 |
+| 40회 | 02.09. | 5.200 |
+| 41회 | 02.10. | 4.900 |
+| 42회 | 02.11. | 5.100 |
+| 43회 | 02.12. | 5.100 |
+| 44회 | 02.13. | 4.800 |
+| 45회 | 02.16. | 3.500 |
+| 46회 | 02.17. | 4.200 |
+| 47회 | 02.18. | 5.500 |
+| 48회 | 02.19. | 5.900 |
+| 49회 | 02.20. | 5.200 |
+| 50회 | 02.23. | 5.600 |
+| 51회 | 02.24. | 5.900 |
+| 52회 | 02.25. | 5.200 |
+| 53회 | 02.26. | 5.400 |
+| 54회 | 02.27. | 5.400 |
+| 55회 | 03.02. | 5.700 |
+| 56회 | 03.03. | 5.500 |
+
+</details>
+<details id="trend-6">
+<summary><strong>시청률 추이 보기 - 아너 : 그녀들의 법정</strong></summary>
+
+시청률 추이 데이터를 찾지 못했습니다.
+
+</details>
+<details id="trend-7">
+<summary><strong>시청률 추이 보기 - 오늘부터 인간입니다만</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 01.16. | 3.700 |
+| 2회 | 01.17. | 2.700 |
+| 3회 | 01.23. | 3.100 |
+| 4회 | 01.24. | 2.400 |
+| 5회 | 01.30. | 2.400 |
+| 6회 | 01.31. | 2.700 |
+| 7회 | 02.06. | 2.700 |
+| 8회 | 02.07. | 2.200 |
+| 9회 | 02.20. | 4.200 |
+| 10회 | 02.21. | 3.200 |
+| 11회 | 02.27. | 3.700 |
+| 12회 | 02.28. | 3.700 |
+
+</details>
+<details id="trend-8">
+<summary><strong>시청률 추이 보기 - 미혼남녀의 효율적 만남</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 02.28. | 3.100 |
+| 2회 | 03.01. | 3.300 |
+
+</details>
+<details id="trend-9">
+<summary><strong>시청률 추이 보기 - 우주를 줄게</strong></summary>
+
+| 회차 | 방영일 | 시청률(%) |
+|---:|---|---:|
+| 1회 | 02.04. | 1.900 |
+| 2회 | 02.05. | 1.300 |
+| 3회 | 02.11. | 1.800 |
+| 4회 | 02.12. | 1.500 |
+| 5회 | 02.18. | 1.300 |
+| 6회 | 02.19. | 1.400 |
+| 7회 | 02.25. | 1.900 |
+| 8회 | 02.26. | 1.400 |
+
+</details>
+<details id="trend-10">
+<summary><strong>시청률 추이 보기 - 신이랑 법률사무소 개업식</strong></summary>
+
+시청률 추이 데이터를 찾지 못했습니다.
+
+</details>

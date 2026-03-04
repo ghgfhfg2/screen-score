@@ -15,6 +15,7 @@ URLS = {
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "drama"
+TREND_DIR = ROOT / "data" / "drama_trends"
 POSTS_DIR = ROOT / "_posts"
 THUMBNAIL_MAP_PATH = ROOT / "_data" / "drama_thumbnails.yml"
 
@@ -165,13 +166,64 @@ def fetch_thumbnail_by_title(title: str) -> str:
     return ""
 
 
+def fetch_rating_trend_by_title(title: str):
+    q = urllib.parse.quote(f"{title} 시청률")
+    url = (
+        "https://search.naver.com/search.naver"
+        f"?where=nexearch&sm=tab_etc&mra=bjkw&x_csa=%7B%22pkid%22%3A%2257%22%2C%20%22isOpen%22%3Afalse%2C%20%22tab%22%3A%22rating%22%7D&pkid=57&qvt=0&query={q}"
+    )
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req, timeout=20) as res:
+            raw = res.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return []
+
+    block_m = re.search(
+        r'"containerSelector":\s*"\._chart_container1".*?"dateList":\s*\[(.*?)\]\s*\}',
+        raw,
+        flags=re.S,
+    )
+    if not block_m:
+        return []
+
+    block = block_m.group(1)
+    out = []
+    item_re = re.compile(
+        r'"turn":\s*"(\d+)"\+"회".*?"rating":\s*"([0-9]+(?:\.[0-9]+)?)".*?"date":\s*"([^"]+)"',
+        flags=re.S,
+    )
+    for m in item_re.finditer(block):
+        out.append({"turn": int(m.group(1)), "rating": float(m.group(2)), "date": m.group(3)})
+
+    return out
+
+
+def write_trend_csv(week_label: str, trend_map):
+    TREND_DIR.mkdir(parents=True, exist_ok=True)
+    p = TREND_DIR / f"{week_label}.csv"
+    with p.open("w", encoding="utf-8", newline="") as f:
+        wr = csv.DictWriter(f, fieldnames=["week", "title", "turn", "date", "rating"])
+        wr.writeheader()
+        for title, arr in trend_map.items():
+            for it in arr:
+                wr.writerow({
+                    "week": week_label,
+                    "title": title,
+                    "turn": it["turn"],
+                    "date": it["date"],
+                    "rating": it["rating"],
+                })
+    return p
+
+
 def render_table(rows, prev_map, thumbnail_map):
     # 3개 소스를 합쳐 시청률 기준으로 통합 순위 산정
     sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 |")
-    lines.append("|---:|---|---|---|---:|---:|")
+    lines.append("| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |")
+    lines.append("|---:|---|---|---|---:|---:|---|")
 
     for i, r in enumerate(sorted_rows, start=1):
         prev = prev_map.get((r["segment"], r["title"]))
@@ -184,13 +236,14 @@ def render_table(rows, prev_map, thumbnail_map):
 
         thumb_url = thumbnail_map.get(r["title"], "")
         thumb = f'<img src="{thumb_url}" alt="{r["title"]}" width="72" />' if thumb_url else "-"
+        trend_link = f"[시청률 추이 보기](#trend-{i})"
 
-        lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
+        lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
 
-    return "\n".join(lines)
+    return "\n".join(lines), sorted_rows
 
 
-def make_post(week_label: str, prev_label: str, rows, prev_map):
+def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
     today = dt.date.today().isoformat()
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
@@ -201,7 +254,6 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
     for r in rows:
         t = r["title"]
         existing = thumbnail_map.get(t, "")
-        # 기존 값이 없거나 기본 og 이미지면 재탐색
         if existing and "og_v3.png" not in existing:
             continue
         img = fetch_thumbnail_by_title(t)
@@ -212,7 +264,26 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
     if changed:
         save_thumbnail_map(thumbnail_map)
 
-    table_md = render_table(rows, prev_map, thumbnail_map)
+    table_md, sorted_rows = render_table(rows, prev_map, thumbnail_map)
+
+    trend_sections = []
+    for i, r in enumerate(sorted_rows, start=1):
+        title = r["title"]
+        arr = sorted(trend_map.get(title, []), key=lambda x: x["turn"])
+        if arr:
+            t_lines = ["| 회차 | 방영일 | 시청률(%) |", "|---:|---|---:|"]
+            for it in arr:
+                t_lines.append(f"| {it['turn']}회 | {it['date']} | {it['rating']:.3f} |")
+            body = "\n".join(t_lines)
+        else:
+            body = "시청률 추이 데이터를 찾지 못했습니다."
+
+        trend_sections.append(
+            f"<details id=\"trend-{i}\">\n"
+            f"<summary><strong>시청률 추이 보기 - {title}</strong></summary>\n\n"
+            f"{body}\n\n"
+            f"</details>"
+        )
 
     content = f"""---
 layout: post
@@ -225,6 +296,10 @@ tags: [weekly, naver, nielsen]
 이번 주 드라마 시청률 요약입니다.
 
 {table_md}
+
+## 드라마별 시청률 추이
+
+{chr(10).join(trend_sections)}
 """
     post_path.write_text(content, encoding="utf-8")
     return post_path
@@ -242,9 +317,20 @@ def main():
         all_rows.extend(rows)
 
     prev_label, prev_map = read_prev(week)
+
+    # 제목 기준 시청률 추이 수집(차트 dateList)
+    trend_map = {}
+    for r in all_rows:
+        t = r["title"]
+        if t in trend_map:
+            continue
+        trend_map[t] = fetch_rating_trend_by_title(t)
+
     csv_path = write_csv(week, all_rows)
-    post_path = make_post(week, prev_label, all_rows, prev_map)
+    trend_csv_path = write_trend_csv(week, trend_map)
+    post_path = make_post(week, prev_label, all_rows, prev_map, trend_map)
     print(f"saved: {csv_path}")
+    print(f"saved: {trend_csv_path}")
     print(f"saved: {post_path}")
 
 
