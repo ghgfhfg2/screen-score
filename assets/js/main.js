@@ -107,13 +107,12 @@ function setupInlineTrendAccordion(mainTable) {
       const cell = inlineRow.firstElementChild;
       const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
       const tableEl = source.querySelector(".trend-table");
-      const emptyHtml = "<p class='trend-empty'>시청률 추이 데이터를 찾지 못했습니다.</p>";
+      const emptyHtml = "<p class='trend-empty'>이 드라마는 시청률 추이를 제공하지 않습니다.</p>";
 
       cell.innerHTML = `
         <div class="inline-trend-card">
-          ${metaHtml}
-          <div class="trend-chart-wrap"><canvas height="120"></canvas></div>
-          ${tableEl ? "" : emptyHtml}
+          ${tableEl ? metaHtml : ""}
+          ${tableEl ? '<div class="trend-chart-wrap"><canvas height="120"></canvas></div>' : emptyHtml}
         </div>
       `;
 
