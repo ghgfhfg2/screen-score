@@ -17,7 +17,13 @@ DATA_DIR = ROOT / "data" / "drama"
 POSTS_DIR = ROOT / "_posts"
 
 ROW_RE = re.compile(
-    r"순위:\s*(\d+)\s*,\s*채널:\s*([^,;]+)\s*,\s*프로그램:\s*([^,;]+)\s*,\s*시청률:\s*([0-9]+(?:\.[0-9]+)?)"
+    r"<tr>\s*"
+    r".*?<span class=\"blind\">(\d+)</span>.*?"
+    r"<td><p><a[^>]*>(.*?)</a></p></td>.*?"
+    r"<td class=\"ct\"><p><a[^>]*>(.*?)</a></p></td>.*?"
+    r"<td class=\"ct scroll_p\"><p class=\"rate[^\"]*\">([0-9]+(?:\.[0-9]+)?)%?</p>"
+    r".*?</tr>",
+    flags=re.S,
 )
 
 
@@ -32,16 +38,12 @@ def fetch_text(url: str) -> str:
     with urllib.request.urlopen(req, timeout=20) as res:
         raw = res.read().decode("utf-8", errors="ignore")
 
-    block_match = re.search(r"Nielsen Korea.*?순위:\s*1,.*?</span>", raw, flags=re.S)
+    # 요청한 대로 div.scroll_bx 내부만 수집
+    block_match = re.search(r"<div class=\"scroll_bx\">.*?</div>\s*</div>", raw, flags=re.S)
     if not block_match:
-        raise SystemExit(f"수집 실패: Nielsen Korea 순위 블록을 찾지 못했습니다. url={url}")
+        raise SystemExit(f"수집 실패: div.scroll_bx 블록을 찾지 못했습니다. url={url}")
 
-    block = block_match.group(0)
-    block = re.sub(r"<mark>|</mark>", "", block)
-    block = re.sub(r"<[^>]+>", " ", block)
-    block = html.unescape(block)
-    block = re.sub(r"\s+", " ", block)
-    return block
+    return block_match.group(0)
 
 
 def collect_rows(segment: str, text: str):
@@ -50,8 +52,8 @@ def collect_rows(segment: str, text: str):
     out = []
     for m in ROW_RE.finditer(text):
         rank = int(m.group(1))
-        channel = m.group(2).strip()
-        title = m.group(3).strip()
+        title = html.unescape(re.sub(r"<[^>]+>", "", m.group(2))).strip()
+        channel = html.unescape(re.sub(r"<[^>]+>", "", m.group(3))).strip()
         rating = float(m.group(4))
 
         if "재방송" in title:
