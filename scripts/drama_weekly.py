@@ -137,8 +137,6 @@ tags: [weekly, naver, nielsen]
 이번 주 드라마 시청률 요약입니다.
 
 {table_md}
-
-> 자동 생성 포스트입니다. 소스 구조 변경 시 값이 누락될 수 있습니다.
 """
     post_path.write_text(content, encoding="utf-8")
     return post_path
