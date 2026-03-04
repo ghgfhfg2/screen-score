@@ -15,6 +15,7 @@ URLS = {
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "drama"
 POSTS_DIR = ROOT / "_posts"
+THUMBNAIL_MAP_PATH = ROOT / "_data" / "drama_thumbnails.yml"
 
 ROW_RE = re.compile(
     r"<tr>\s*"
@@ -99,13 +100,30 @@ def write_csv(week_label: str, rows):
     return p
 
 
-def render_table(rows, prev_map):
+def load_thumbnail_map():
+    m = {}
+    if not THUMBNAIL_MAP_PATH.exists():
+        return m
+
+    for line in THUMBNAIL_MAP_PATH.read_text(encoding="utf-8").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#") or ":" not in s:
+            continue
+        k, v = s.split(":", 1)
+        key = k.strip().strip('"').strip("'")
+        val = v.strip().strip('"').strip("'")
+        if key and val:
+            m[key] = val
+    return m
+
+
+def render_table(rows, prev_map, thumbnail_map):
     # 3개 소스를 합쳐 시청률 기준으로 통합 순위 산정
     sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
-    lines.append("|---:|---|---|---:|---:|")
+    lines.append("| 통합순위 | 썸네일 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
+    lines.append("|---:|---|---|---|---:|---:|")
 
     for i, r in enumerate(sorted_rows, start=1):
         prev = prev_map.get((r["segment"], r["title"]))
@@ -115,7 +133,11 @@ def render_table(rows, prev_map):
             d = r["rating"] - prev
             sign = "+" if d > 0 else ""
             diff = f"{sign}{d:.3f}%p"
-        lines.append(f"| {i} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
+
+        thumb_url = thumbnail_map.get(r["title"], "")
+        thumb = f'<img src="{thumb_url}" alt="{r["title"]}" width="72" />' if thumb_url else "-"
+
+        lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
 
     return "\n".join(lines)
 
@@ -124,7 +146,8 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
     today = dt.date.today().isoformat()
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
-    table_md = render_table(rows, prev_map)
+    thumbnail_map = load_thumbnail_map()
+    table_md = render_table(rows, prev_map, thumbnail_map)
 
     content = f"""---
 layout: post
