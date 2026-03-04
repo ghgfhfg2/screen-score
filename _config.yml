@@ -12,6 +12,10 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
 
+# 댓글(Disqus)
+disqus:
+  shortname: ""
+
 # 기본 URL 구조
 permalink: /:categories/:title/
 

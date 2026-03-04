@@ -299,6 +299,7 @@ title: \"주간 드라마 시청률 ({week_label})\"
 date: {today} 09:00:00 +0900
 categories: [drama-ratings]
 tags: [weekly, naver, nielsen]
+comments: true
 ---
 
 이번 주 드라마 시청률 요약입니다.
