@@ -2,6 +2,8 @@
 import csv
 import datetime as dt
 import html
+import json
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -18,6 +20,8 @@ DATA_DIR = ROOT / "data" / "drama"
 TREND_DIR = ROOT / "data" / "drama_trends"
 POSTS_DIR = ROOT / "_posts"
 THUMBNAIL_MAP_PATH = ROOT / "_data" / "drama_thumbnails.yml"
+TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
@@ -140,28 +144,28 @@ def save_thumbnail_map(m):
 
 
 def fetch_thumbnail_by_title(title: str) -> str:
-    # 요청 방식: "{드라마명} 정보" 검색 결과에서 a.thumb > img 추출
-    q = urllib.parse.quote(f"{title} 정보")
+    # TMDB 기반 포스터 조회 (저작권/출처 정책 관리 용이)
+    if not TMDB_API_KEY:
+        return ""
+
+    q = urllib.parse.quote(title)
     url = (
-        "https://search.naver.com/search.naver"
-        f"?where=nexearch&sm=tab_etc&mra=bjkw&pkid=57&qvt=0&query={q}"
+        "https://api.themoviedb.org/3/search/tv"
+        f"?api_key={TMDB_API_KEY}&language=ko-KR&query={q}&page=1&include_adult=false"
     )
-    req = urllib.request.Request(url, headers=HEADERS)
+    req = urllib.request.Request(url, headers={"User-Agent": HEADERS["User-Agent"]})
     try:
         with urllib.request.urlopen(req, timeout=20) as res:
             raw = res.read().decode("utf-8", errors="ignore")
+        data = json.loads(raw)
     except Exception:
         return ""
 
-    m = re.search(r'<a[^>]*class="thumb"[^>]*>.*?<img[^>]*>', raw, flags=re.S)
-    if not m:
-        return ""
-
-    tag = m.group(0)
-    for attr in ["src", "data-lazysrc", "data-src"]:
-        mm = re.search(attr + r'="([^"]+)"', tag)
-        if mm:
-            return html.unescape(mm.group(1)).strip()
+    results = data.get("results", []) or []
+    for item in results:
+        poster_path = item.get("poster_path")
+        if poster_path:
+            return f"{TMDB_IMAGE_BASE}{poster_path}"
 
     return ""
 
@@ -249,12 +253,13 @@ def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
 
     thumbnail_map = load_thumbnail_map()
 
-    # 매핑 없는 작품은 드라마명 기준으로 썸네일 자동 탐색 후 캐시
+    # 매핑 없는 작품은 TMDB 기준으로 포스터 자동 탐색 후 캐시
     changed = False
     for r in rows:
         t = r["title"]
         existing = thumbnail_map.get(t, "")
-        if existing and "og_v3.png" not in existing:
+        # 기존 URL이 TMDB가 아니면 TMDB 포스터로 교체 시도
+        if existing and "image.tmdb.org" in existing:
             continue
         img = fetch_thumbnail_by_title(t)
         if img:
@@ -263,6 +268,12 @@ def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
 
     if changed:
         save_thumbnail_map(thumbnail_map)
+
+    # TMDB 키가 없으면 비-TMDB 이미지는 노출하지 않음(저작권 리스크 회피)
+    if not TMDB_API_KEY:
+        for k, v in list(thumbnail_map.items()):
+            if v and "image.tmdb.org" not in v:
+                thumbnail_map[k] = ""
 
     table_md, sorted_rows = render_table(rows, prev_map, thumbnail_map)
 
@@ -329,6 +340,9 @@ tags: [weekly, naver, nielsen]
 def main():
     week = current_week_label()
     all_rows = []
+
+    if not TMDB_API_KEY:
+        print("warn: TMDB_API_KEY not set, poster lookup will be skipped")
 
     for segment, url in URLS.items():
         text = fetch_text(url)

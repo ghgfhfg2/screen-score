@@ -23,6 +23,18 @@ bundle exec jekyll serve --livereload
 현재 작업 환경에는 `ruby`, `bundler`, `jekyll`이 설치되어 있지 않아 실제 빌드 실행은 못 했습니다.
 설치 후 위 명령으로 바로 실행하면 됩니다.
 
+## 포스터(TMDB) 설정
+
+포스터는 TMDB API를 사용합니다.
+
+```bash
+export TMDB_API_KEY="YOUR_TMDB_API_KEY"
+python3 scripts/drama_weekly.py
+```
+
+GitHub Actions에서는 저장소 `Settings > Secrets and variables > Actions`에
+`TMDB_API_KEY` 시크릿을 추가하세요.
+
 ## 다음 단계(기획 반영)
 
 기획 주시면 아래를 순서대로 붙일게요.
