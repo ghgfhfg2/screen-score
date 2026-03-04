@@ -248,7 +248,6 @@ def render_table(rows, prev_map, thumbnail_map):
 def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
     now = dt.datetime.now()
     today = now.date().isoformat()
-    collected_at = now.strftime("%Y-%m-%d %H:%M KST")
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
     # 이미지 컬럼 제거: 포스터 조회 로직 비활성화
@@ -318,7 +317,6 @@ tags: [weekly, naver, nielsen]
 
 - 출처: **닐슨코리아(Nielsen Korea)**
 - 집계 기준: 주간 단위 시청률
-- 수집 일시: {collected_at}
 - 안내: 본 콘텐츠는 정보 제공 목적이며, 최종 수치는 원출처 공지값을 기준으로 확인해 주세요.
 """
     post_path.write_text(content, encoding="utf-8")
