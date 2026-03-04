@@ -3,6 +3,7 @@ import csv
 import datetime as dt
 import html
 import re
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -16,6 +17,13 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "drama"
 POSTS_DIR = ROOT / "_posts"
 THUMBNAIL_MAP_PATH = ROOT / "_data" / "drama_thumbnails.yml"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://search.naver.com/",
+}
 
 ROW_RE = re.compile(
     r"<tr>\s*"
@@ -35,7 +43,7 @@ def current_week_label(today: dt.date | None = None) -> str:
 
 
 def fetch_text(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=20) as res:
         raw = res.read().decode("utf-8", errors="ignore")
 
@@ -105,16 +113,60 @@ def load_thumbnail_map():
     if not THUMBNAIL_MAP_PATH.exists():
         return m
 
+    line_re = re.compile(r'^\s*"(?P<k>.*)"\s*:\s*"(?P<v>.*)"\s*$')
     for line in THUMBNAIL_MAP_PATH.read_text(encoding="utf-8").splitlines():
         s = line.strip()
-        if not s or s.startswith("#") or ":" not in s:
+        if not s or s.startswith("#"):
             continue
-        k, v = s.split(":", 1)
-        key = k.strip().strip('"').strip("'")
-        val = v.strip().strip('"').strip("'")
+        mm = line_re.match(s)
+        if not mm:
+            continue
+        key = mm.group("k").replace('\\"', '"').replace('\\\\', '\\').strip()
+        val = mm.group("v").replace('\\"', '"').replace('\\\\', '\\').strip()
         if key and val:
             m[key] = val
     return m
+
+
+def save_thumbnail_map(m):
+    THUMBNAIL_MAP_PATH.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["# 드라마명: 썸네일 이미지 URL (자동 수집 + 수동 보정)"]
+    for k in sorted(m.keys()):
+        k2 = k.replace('\\', '\\\\').replace('"', '\\"')
+        v2 = m[k].replace('\\', '\\\\').replace('"', '\\"')
+        lines.append(f'"{k2}": "{v2}"')
+    THUMBNAIL_MAP_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def fetch_thumbnail_by_title(title: str) -> str:
+    # 드라마명으로 별도 검색 후 본문 이미지 URL 후보 추출
+    q = urllib.parse.quote(f"{title} 드라마")
+    url = f"https://search.naver.com/search.naver?where=nexearch&sm=top_hty&query={q}"
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req, timeout=20) as res:
+            raw = res.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+    # search.pstatic.net/common?...src=<원본이미지> 패턴에서 src를 추출
+    cands = re.findall(r"https://search\.pstatic\.net/common\?[^\"'\s]+", raw)
+    for c in cands:
+        parsed = urllib.parse.urlparse(html.unescape(c))
+        qs = urllib.parse.parse_qs(parsed.query)
+        src = qs.get("src", [""])[0]
+        src = urllib.parse.unquote(src)
+        if not src:
+            continue
+        # 로고/뉴스/아이콘 제외, 프로그램 썸네일 계열 우선
+        bad = ["office_logo", "imgnews", "logo", "favicon"]
+        if any(b in src for b in bad):
+            continue
+        good = ["csearch-phinf", "phinf.pstatic.net", "tvcast"]
+        if any(g in src for g in good):
+            return src
+
+    return ""
 
 
 def render_table(rows, prev_map, thumbnail_map):
@@ -147,6 +199,23 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
     thumbnail_map = load_thumbnail_map()
+
+    # 매핑 없는 작품은 드라마명 기준으로 썸네일 자동 탐색 후 캐시
+    changed = False
+    for r in rows:
+        t = r["title"]
+        existing = thumbnail_map.get(t, "")
+        # 기존 값이 없거나 기본 og 이미지면 재탐색
+        if existing and "og_v3.png" not in existing:
+            continue
+        img = fetch_thumbnail_by_title(t)
+        if img:
+            thumbnail_map[t] = img
+            changed = True
+
+    if changed:
+        save_thumbnail_map(thumbnail_map)
+
     table_md = render_table(rows, prev_map, thumbnail_map)
 
     content = f"""---

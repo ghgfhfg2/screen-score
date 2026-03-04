@@ -1,4 +1,11 @@
-# 드라마명: 썸네일 이미지 URL
-# 예시
-# "사랑을 처방해 드립니다": "https://example.com/images/love-prescription.jpg"
-# "마리와 별난 아빠들": "https://example.com/images/mari-dad.jpg"
+# 드라마명: 썸네일 이미지 URL (자동 수집 + 수동 보정)
+"마리와 별난 아빠들": "https://phinf.pstatic.net/tvcast/20260303_74/lnOlp_17725423013890lL8h_JPEG/Xfwg2ASGac2E.jpg"
+"미혼남녀의 효율적 만남": "https://phinf.pstatic.net/tvcast/20260304_184/1A7A0_1772583698100E0YDU_JPEG/20260304_090950_448_1.jpg"
+"붉은 진주": "https://phinf.pstatic.net/tvcast/20260303_61/7TjoE_1772539903175YHlcV_JPEG/Fo5eLFxIAE1L.jpg"
+"사랑을 처방해 드립니다": "https://phinf.pstatic.net/tvcast/20260301_283/8XDXG_1772370396129Q1LV9_JPEG/KlHFHUgPuYty.jpg"
+"신이랑 법률사무소 개업식": "https://phinf.pstatic.net/tvcast/20251231_75/uWicj_1767142068074jwlxh_PNG/4859661d-b448-4c05-8ee6-878edd6e7cee.png"
+"아너 : 그녀들의 법정": "https://phinf.pstatic.net/tvcast/20260303_261/93Dyw_1772529514689w62Yo_JPEG/l2BNoUscoJ_03.jpg"
+"언더커버 미쓰홍": "https://phinf.pstatic.net/tvcast/20260228_190/03mBd_1772273283385W5UnA_JPEG/eebf2759-ec2e-41b2-9205-d6fd2b2891cc_naver.jpg"
+"오늘부터 인간입니다만": "https://phinf.pstatic.net/tvcast/20260228_239/tWZZV_1772288499933dwAw3_JPEG/06844c40-3ac4-44ba-af50-155b9a975427.jpg"
+"우주를 줄게": "https://phinf.pstatic.net/tvcast/20260303_101/vfhwJ_1772517608115CSVaa_JPEG/87950e0d-cb78-4769-b39d-1a18c7c40819_naver.jpg"
+"첫 번째 남자": "https://phinf.pstatic.net/tvcast/20260303_188/rS9u6_1772536308972hGjFs_JPEG/clip_20260303200302_44.jpg"
