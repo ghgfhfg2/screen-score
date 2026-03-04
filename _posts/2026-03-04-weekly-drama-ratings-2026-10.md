@@ -8,18 +8,18 @@ tags: [weekly, naver, nielsen]
 
 이번 주 드라마 시청률 요약입니다.
 
-| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |
-|---:|---|---|---|---:|---:|---|
-| 1 | - | KBS2 | 사랑을 처방해 드립니다 | 16.500 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-1">시청률 추이 보기</button> |
-| 2 | - | KBS1 | 마리와 별난 아빠들 | 11.400 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-2">시청률 추이 보기</button> |
-| 3 | - | tvN | 언더커버 미쓰홍 | 11.200 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-3">시청률 추이 보기</button> |
-| 4 | - | KBS2 | 붉은 진주 | 8.800 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-4">시청률 추이 보기</button> |
-| 5 | - | MBC | 첫 번째 남자 | 5.500 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-5">시청률 추이 보기</button> |
-| 6 | - | ENA | 아너 : 그녀들의 법정 | 4.300 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-6">시청률 추이 보기</button> |
-| 7 | - | SBS | 오늘부터 인간입니다만 | 3.700 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-7">시청률 추이 보기</button> |
-| 8 | - | JTBC | 미혼남녀의 효율적 만남 | 3.200 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-8">시청률 추이 보기</button> |
-| 9 | - | tvN | 우주를 줄게 | 1.600 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-9">시청률 추이 보기</button> |
-| 10 | - | SBS | 신이랑 법률사무소 개업식 | 1.400 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-10">시청률 추이 보기</button> |
+| 통합순위 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |
+|---:|---|---|---:|---:|---|
+| 1 | KBS2 | 사랑을 처방해 드립니다 | 16.500 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-1">시청률 추이 보기</button> |
+| 2 | KBS1 | 마리와 별난 아빠들 | 11.400 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-2">시청률 추이 보기</button> |
+| 3 | tvN | 언더커버 미쓰홍 | 11.200 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-3">시청률 추이 보기</button> |
+| 4 | KBS2 | 붉은 진주 | 8.800 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-4">시청률 추이 보기</button> |
+| 5 | MBC | 첫 번째 남자 | 5.500 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-5">시청률 추이 보기</button> |
+| 6 | ENA | 아너 : 그녀들의 법정 | 4.300 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-6">시청률 추이 보기</button> |
+| 7 | SBS | 오늘부터 인간입니다만 | 3.700 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-7">시청률 추이 보기</button> |
+| 8 | JTBC | 미혼남녀의 효율적 만남 | 3.200 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-8">시청률 추이 보기</button> |
+| 9 | tvN | 우주를 줄게 | 1.600 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-9">시청률 추이 보기</button> |
+| 10 | SBS | 신이랑 법률사무소 개업식 | 1.400 | NEW | <button class="trend-btn" type="button" data-trend-id="trend-10">시청률 추이 보기</button> |
 
 <section class="trend-section">
 ## 드라마별 시청률 추이

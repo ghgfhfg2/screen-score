@@ -226,8 +226,8 @@ def render_table(rows, prev_map, thumbnail_map):
     sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 포스터 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |")
-    lines.append("|---:|---|---|---|---:|---:|---|")
+    lines.append("| 통합순위 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |")
+    lines.append("|---:|---|---|---:|---:|---|")
 
     for i, r in enumerate(sorted_rows, start=1):
         prev = prev_map.get((r["segment"], r["title"]))
@@ -238,11 +238,9 @@ def render_table(rows, prev_map, thumbnail_map):
             sign = "+" if d > 0 else ""
             diff = f"{sign}{d:.3f}%p"
 
-        thumb_url = thumbnail_map.get(r["title"], "")
-        thumb = f'<img src="{thumb_url}" alt="{r["title"]}" width="72" />' if thumb_url else "-"
         trend_link = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-{i}\">시청률 추이 보기</button>"
 
-        lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
+        lines.append(f"| {i} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
 
     return "\n".join(lines), sorted_rows
 
@@ -251,29 +249,8 @@ def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
     today = dt.date.today().isoformat()
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
-    thumbnail_map = load_thumbnail_map()
-
-    # 매핑 없는 작품은 TMDB 기준으로 포스터 자동 탐색 후 캐시
-    changed = False
-    for r in rows:
-        t = r["title"]
-        existing = thumbnail_map.get(t, "")
-        # 기존 URL이 TMDB가 아니면 TMDB 포스터로 교체 시도
-        if existing and "image.tmdb.org" in existing:
-            continue
-        img = fetch_thumbnail_by_title(t)
-        if img:
-            thumbnail_map[t] = img
-            changed = True
-
-    if changed:
-        save_thumbnail_map(thumbnail_map)
-
-    # TMDB 키가 없으면 비-TMDB 이미지는 노출하지 않음(저작권 리스크 회피)
-    if not TMDB_API_KEY:
-        for k, v in list(thumbnail_map.items()):
-            if v and "image.tmdb.org" not in v:
-                thumbnail_map[k] = ""
+    # 이미지 컬럼 제거: 포스터 조회 로직 비활성화
+    thumbnail_map = {}
 
     table_md, sorted_rows = render_table(rows, prev_map, thumbnail_map)
 
