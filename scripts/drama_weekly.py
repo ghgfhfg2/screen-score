@@ -139,9 +139,12 @@ def save_thumbnail_map(m):
 
 
 def fetch_thumbnail_by_title(title: str) -> str:
-    # 드라마명으로 별도 검색 후 본문 이미지 URL 후보 추출
-    q = urllib.parse.quote(f"{title} 드라마")
-    url = f"https://search.naver.com/search.naver?where=nexearch&sm=top_hty&query={q}"
+    # 요청 방식: "{드라마명} 정보" 검색 결과에서 a.thumb > img 추출
+    q = urllib.parse.quote(f"{title} 정보")
+    url = (
+        "https://search.naver.com/search.naver"
+        f"?where=nexearch&sm=tab_etc&mra=bjkw&pkid=57&qvt=0&query={q}"
+    )
     req = urllib.request.Request(url, headers=HEADERS)
     try:
         with urllib.request.urlopen(req, timeout=20) as res:
@@ -149,22 +152,15 @@ def fetch_thumbnail_by_title(title: str) -> str:
     except Exception:
         return ""
 
-    # search.pstatic.net/common?...src=<원본이미지> 패턴에서 src를 추출
-    cands = re.findall(r"https://search\.pstatic\.net/common\?[^\"'\s]+", raw)
-    for c in cands:
-        parsed = urllib.parse.urlparse(html.unescape(c))
-        qs = urllib.parse.parse_qs(parsed.query)
-        src = qs.get("src", [""])[0]
-        src = urllib.parse.unquote(src)
-        if not src:
-            continue
-        # 로고/뉴스/아이콘 제외, 프로그램 썸네일 계열 우선
-        bad = ["office_logo", "imgnews", "logo", "favicon"]
-        if any(b in src for b in bad):
-            continue
-        good = ["csearch-phinf", "phinf.pstatic.net", "tvcast"]
-        if any(g in src for g in good):
-            return src
+    m = re.search(r'<a[^>]*class="thumb"[^>]*>.*?<img[^>]*>', raw, flags=re.S)
+    if not m:
+        return ""
+
+    tag = m.group(0)
+    for attr in ["src", "data-lazysrc", "data-src"]:
+        mm = re.search(attr + r'="([^"]+)"', tag)
+        if mm:
+            return html.unescape(mm.group(1)).strip()
 
     return ""
 
