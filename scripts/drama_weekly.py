@@ -6,7 +6,12 @@ import re
 import urllib.request
 from pathlib import Path
 
-URL = "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=%EC%A3%BC%EA%B0%84%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%8B%9C%EC%B2%AD%EB%A5%A0"
+URLS = {
+    "지상파": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%8B%9C%EC%B2%AD%EB%A5%A0",
+    "종합편성": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%A2%85%ED%95%A9%ED%8E%B8%EC%84%B1%EC%8B%9C%EC%B2%AD%EB%A5%A0",
+    "케이블": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EC%BC%80%EC%9D%B4%EB%B8%94%20%EC%8B%9C%EC%B2%AD%EB%A5%A0",
+}
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "drama"
 POSTS_DIR = ROOT / "_posts"
@@ -27,10 +32,9 @@ def fetch_text(url: str) -> str:
     with urllib.request.urlopen(req, timeout=20) as res:
         raw = res.read().decode("utf-8", errors="ignore")
 
-    # 전체 HTML이 아니라, 해당 URL 검색결과 안의 "Nielsen Korea ... 순위:" 블록만 파싱
     block_match = re.search(r"Nielsen Korea.*?순위:\s*1,.*?</span>", raw, flags=re.S)
     if not block_match:
-        raise SystemExit("수집 실패: Nielsen Korea 순위 블록을 찾지 못했습니다.")
+        raise SystemExit(f"수집 실패: Nielsen Korea 순위 블록을 찾지 못했습니다. url={url}")
 
     block = block_match.group(0)
     block = re.sub(r"<mark>|</mark>", "", block)
@@ -40,7 +44,7 @@ def fetch_text(url: str) -> str:
     return block
 
 
-def collect_rows(text: str):
+def collect_rows(segment: str, text: str):
     seen = set()
     seen_rank = set()
     out = []
@@ -50,7 +54,6 @@ def collect_rows(text: str):
         title = m.group(3).strip()
         rating = float(m.group(4))
 
-        # '(재방송)' 표기 항목 제외
         if "재방송" in title:
             continue
 
@@ -59,9 +62,8 @@ def collect_rows(text: str):
             continue
         seen.add(key)
         seen_rank.add(rank)
-        out.append({"rank": rank, "channel": channel, "title": title, "rating": rating})
+        out.append({"segment": segment, "rank": rank, "channel": channel, "title": title, "rating": rating})
 
-        # URL 결과 카드 기준 Top10만 사용
         if len(out) >= 10:
             break
 
@@ -79,7 +81,8 @@ def read_prev(week_label: str):
     m = {}
     with p.open("r", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            m[row["title"]] = float(row["rating"])
+            seg = row.get("segment", "전체")
+            m[(seg, row["title"])] = float(row["rating"])
     return prev_label, m
 
 
@@ -87,22 +90,19 @@ def write_csv(week_label: str, rows):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     p = DATA_DIR / f"{week_label}.csv"
     with p.open("w", encoding="utf-8", newline="") as f:
-        wr = csv.DictWriter(f, fieldnames=["week", "rank", "channel", "title", "rating"])
+        wr = csv.DictWriter(f, fieldnames=["week", "segment", "rank", "channel", "title", "rating"])
         wr.writeheader()
         for r in rows:
             wr.writerow({"week": week_label, **r})
     return p
 
 
-def make_post(week_label: str, prev_label: str, rows, prev_map):
-    today = dt.date.today().isoformat()
-    post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
-
+def render_table(rows, prev_map):
     lines = []
     lines.append("| 순위 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
     lines.append("|---:|---|---|---:|---:|")
     for r in rows:
-        prev = prev_map.get(r["title"])
+        prev = prev_map.get((r["segment"], r["title"]))
         if prev is None:
             diff = "NEW"
         else:
@@ -110,6 +110,19 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
             sign = "+" if d > 0 else ""
             diff = f"{sign}{d:.3f}%p"
         lines.append(f"| {r['rank']} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
+    return "\n".join(lines)
+
+
+def make_post(week_label: str, prev_label: str, rows, prev_map):
+    today = dt.date.today().isoformat()
+    post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
+
+    sections = []
+    for seg in ["지상파", "종합편성", "케이블"]:
+        seg_rows = [r for r in rows if r["segment"] == seg]
+        if not seg_rows:
+            continue
+        sections.append(f"## {seg}\n\n" + render_table(seg_rows, prev_map))
 
     content = f"""---
 layout: post
@@ -119,14 +132,15 @@ categories: [drama-ratings]
 tags: [weekly, naver, nielsen]
 ---
 
-이번 주 드라마/방송 시청률 요약입니다. (기준: 네이버 주간드라마 시청률)
+이번 주 드라마 시청률 요약입니다. (기준: 네이버 검색 결과)
 
 - 기준 주차: **{week_label}**
 - 비교 주차: **{prev_label}**
+- 수집 소스: 지상파 / 종합편성 / 케이블 3개 URL
 
-{chr(10).join(lines)}
+{chr(10).join(sections)}
 
-> 자동 생성 포스트입니다. 수집 소스 구조 변경 시 값이 누락될 수 있습니다.
+> 자동 생성 포스트입니다. 소스 구조 변경 시 값이 누락될 수 있습니다.
 """
     post_path.write_text(content, encoding="utf-8")
     return post_path
@@ -134,13 +148,18 @@ tags: [weekly, naver, nielsen]
 
 def main():
     week = current_week_label()
-    text = fetch_text(URL)
-    rows = collect_rows(text)
-    if not rows:
-        raise SystemExit("수집 실패: 패턴 매칭 결과가 없습니다. 소스 구조가 바뀌었을 수 있습니다.")
+    all_rows = []
+
+    for segment, url in URLS.items():
+        text = fetch_text(url)
+        rows = collect_rows(segment, text)
+        if not rows:
+            raise SystemExit(f"수집 실패: {segment} 패턴 매칭 결과가 없습니다.")
+        all_rows.extend(rows)
+
     prev_label, prev_map = read_prev(week)
-    csv_path = write_csv(week, rows)
-    post_path = make_post(week, prev_label, rows, prev_map)
+    csv_path = write_csv(week, all_rows)
+    post_path = make_post(week, prev_label, all_rows, prev_map)
     print(f"saved: {csv_path}")
     print(f"saved: {post_path}")
 
