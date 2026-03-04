@@ -236,7 +236,7 @@ def render_table(rows, prev_map, thumbnail_map):
 
         thumb_url = thumbnail_map.get(r["title"], "")
         thumb = f'<img src="{thumb_url}" alt="{r["title"]}" width="72" />' if thumb_url else "-"
-        trend_link = f"[시청률 추이 보기](#trend-{i})"
+        trend_link = f"<a class=\"trend-btn\" href=\"#trend-{i}\">시청률 추이 보기</a>"
 
         lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
 
@@ -270,18 +270,37 @@ def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
     for i, r in enumerate(sorted_rows, start=1):
         title = r["title"]
         arr = sorted(trend_map.get(title, []), key=lambda x: x["turn"])
+
         if arr:
-            t_lines = ["| 회차 | 방영일 | 시청률(%) |", "|---:|---|---:|"]
+            latest = arr[-1]["rating"]
+            best = max(x["rating"] for x in arr)
+            avg = sum(x["rating"] for x in arr) / len(arr)
+
+            rows_html = []
             for it in arr:
-                t_lines.append(f"| {it['turn']}회 | {it['date']} | {it['rating']:.3f} |")
-            body = "\n".join(t_lines)
+                rows_html.append(
+                    f"<tr><td>{it['turn']}회</td><td>{it['date']}</td><td>{it['rating']:.3f}</td></tr>"
+                )
+
+            body = (
+                f"<div class=\"trend-meta\">"
+                f"<span>최신 <strong>{latest:.3f}%</strong></span>"
+                f"<span>최고 <strong>{best:.3f}%</strong></span>"
+                f"<span>평균 <strong>{avg:.3f}%</strong></span>"
+                f"</div>"
+                f"<div class=\"trend-table-wrap\">"
+                f"<table class=\"trend-table\">"
+                f"<thead><tr><th>회차</th><th>방영일</th><th>시청률(%)</th></tr></thead>"
+                f"<tbody>{''.join(rows_html)}</tbody>"
+                f"</table></div>"
+            )
         else:
-            body = "시청률 추이 데이터를 찾지 못했습니다."
+            body = "<p class=\"trend-empty\">시청률 추이 데이터를 찾지 못했습니다.</p>"
 
         trend_sections.append(
-            f"<details id=\"trend-{i}\">\n"
-            f"<summary><strong>시청률 추이 보기 - {title}</strong></summary>\n\n"
-            f"{body}\n\n"
+            f"<details class=\"trend-details\" id=\"trend-{i}\">"
+            f"<summary><span class=\"trend-title\">{title}</span></summary>"
+            f"{body}"
             f"</details>"
         )
 
