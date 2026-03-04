@@ -1,0 +1,33 @@
+title: "Drama & Movie Stats"
+description: "드라마/영화 데이터와 인사이트를 다루는 통계형 블로그"
+baseurl: ""
+url: ""
+lang: ko-KR
+timezone: Asia/Seoul
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# 기본 URL 구조
+permalink: /:categories/:title/
+
+# 컬렉션/페이지 기본 레이아웃
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: post
+      author: "admin"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: page
+
+# 나중에 통계 포스트 카테고리 확장하기 쉽게 초기 카테고리 제안
+# 예) drama-ratings, ott-rankings, boxoffice, trends
