@@ -108,14 +108,14 @@ function setupInlineTrendAccordion(mainTable) {
       const title = source.querySelector(".trend-title")?.textContent?.trim() || "시청률 추이";
       const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
       const tableEl = source.querySelector(".trend-table");
-      const tableHtml = tableEl ? tableEl.outerHTML : "<p class='trend-empty'>시청률 추이 데이터를 찾지 못했습니다.</p>";
+      const emptyHtml = "<p class='trend-empty'>시청률 추이 데이터를 찾지 못했습니다.</p>";
 
       cell.innerHTML = `
         <div class="inline-trend-card">
           <div class="inline-trend-head">${title} · 시청률 추이</div>
           ${metaHtml}
           <div class="trend-chart-wrap"><canvas height="120"></canvas></div>
-          <div class="trend-table-wrap">${tableHtml}</div>
+          ${tableEl ? "" : emptyHtml}
         </div>
       `;
 
@@ -123,9 +123,8 @@ function setupInlineTrendAccordion(mainTable) {
       row.classList.add("is-expanded");
 
       const canvas = inlineRow.querySelector("canvas");
-      const trendTable = inlineRow.querySelector(".trend-table");
-      if (canvas && trendTable && window.Chart) {
-        buildTrendChartFromTable(canvas, trendTable);
+      if (canvas && tableEl && window.Chart) {
+        buildTrendChartFromTable(canvas, tableEl);
       }
 
       if (window.gsap) {
