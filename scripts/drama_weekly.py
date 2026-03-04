@@ -100,10 +100,14 @@ def write_csv(week_label: str, rows):
 
 
 def render_table(rows, prev_map):
+    # 3개 소스를 합쳐 시청률 기준으로 통합 순위 산정
+    sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
+
     lines = []
-    lines.append("| 순위 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
+    lines.append("| 통합순위 | 채널 | 드라마 | 시청률(%) | 전주 대비 |")
     lines.append("|---:|---|---|---:|---:|")
-    for r in rows:
+
+    for i, r in enumerate(sorted_rows, start=1):
         prev = prev_map.get((r["segment"], r["title"]))
         if prev is None:
             diff = "NEW"
@@ -111,7 +115,8 @@ def render_table(rows, prev_map):
             d = r["rating"] - prev
             sign = "+" if d > 0 else ""
             diff = f"{sign}{d:.3f}%p"
-        lines.append(f"| {r['rank']} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
+        lines.append(f"| {i} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} |")
+
     return "\n".join(lines)
 
 
@@ -119,12 +124,7 @@ def make_post(week_label: str, prev_label: str, rows, prev_map):
     today = dt.date.today().isoformat()
     post_path = POSTS_DIR / f"{today}-weekly-drama-ratings-{week_label}.md"
 
-    sections = []
-    for seg in ["지상파", "종합편성", "케이블"]:
-        seg_rows = [r for r in rows if r["segment"] == seg]
-        if not seg_rows:
-            continue
-        sections.append(f"## {seg}\n\n" + render_table(seg_rows, prev_map))
+    table_md = render_table(rows, prev_map)
 
     content = f"""---
 layout: post
@@ -134,13 +134,9 @@ categories: [drama-ratings]
 tags: [weekly, naver, nielsen]
 ---
 
-이번 주 드라마 시청률 요약입니다. (기준: 네이버 검색 결과)
+이번 주 드라마 시청률 요약입니다.
 
-- 기준 주차: **{week_label}**
-- 비교 주차: **{prev_label}**
-- 수집 소스: 지상파 / 종합편성 / 케이블 3개 URL
-
-{chr(10).join(sections)}
+{table_md}
 
 > 자동 생성 포스트입니다. 소스 구조 변경 시 값이 누락될 수 있습니다.
 """
