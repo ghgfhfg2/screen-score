@@ -104,11 +104,16 @@ body.modern-ui {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .trend-btn:hover {
   background: #e3ebff;
   text-decoration: none;
+}
+
+.trend-section {
+  display: none;
 }
 
 .trend-details {
@@ -117,6 +122,22 @@ body.modern-ui {
   border-radius: 12px;
   background: #fff;
   padding: 10px 12px;
+}
+
+.inline-trend-row td {
+  background: #f8faff;
+  padding: 0;
+}
+
+.inline-trend-card {
+  padding: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.inline-trend-head {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
 }
 
 .trend-details summary {

@@ -236,7 +236,7 @@ def render_table(rows, prev_map, thumbnail_map):
 
         thumb_url = thumbnail_map.get(r["title"], "")
         thumb = f'<img src="{thumb_url}" alt="{r["title"]}" width="72" />' if thumb_url else "-"
-        trend_link = f"<a class=\"trend-btn\" href=\"#trend-{i}\">시청률 추이 보기</a>"
+        trend_link = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-{i}\">시청률 추이 보기</button>"
 
         lines.append(f"| {i} | {thumb} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
 
@@ -316,9 +316,11 @@ tags: [weekly, naver, nielsen]
 
 {table_md}
 
+<section class="trend-section">
 ## 드라마별 시청률 추이
 
 {chr(10).join(trend_sections)}
+</section>
 """
     post_path.write_text(content, encoding="utf-8")
     return post_path

@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const allRows = document.querySelectorAll("table tbody tr");
   const details = document.querySelectorAll(".trend-details");
 
-  // 메인 통합 테이블 찾기
   const tables = Array.from(document.querySelectorAll("table"));
   const mainTable = tables.find((t) =>
     (t.querySelector("thead th")?.textContent || "").includes("통합순위")
@@ -10,11 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (mainTable) {
     setupMainTableControls(mainTable);
-  }
-
-  // 드라마별 추이 차트 생성
-  if (window.Chart) {
-    details.forEach((detail) => buildTrendChart(detail));
+    setupInlineTrendAccordion(mainTable);
   }
 
   if (window.gsap) {
@@ -75,6 +70,12 @@ function setupMainTableControls(mainTable) {
       const okQ = !q || title.includes(q);
       const okCh = !ch || channel === ch;
       row.style.display = okQ && okCh ? "" : "none";
+
+      const next = row.nextElementSibling;
+      if (next && next.classList.contains("inline-trend-row") && row.style.display === "none") {
+        next.remove();
+        row.classList.remove("is-expanded");
+      }
     });
   };
 
@@ -82,38 +83,88 @@ function setupMainTableControls(mainTable) {
   channelSelect.addEventListener("change", applyFilter);
 }
 
-function buildTrendChart(detail) {
-  const table = detail.querySelector(".trend-table");
-  if (!table) return;
+function setupInlineTrendAccordion(mainTable) {
+  const bodyRows = Array.from(mainTable.querySelectorAll("tbody tr"));
 
+  bodyRows.forEach((row) => {
+    const btn = row.querySelector(".trend-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const trendId = btn.getAttribute("data-trend-id");
+      const source = document.getElementById(trendId);
+      if (!source) return;
+
+      const opened = row.classList.contains("is-expanded");
+      closeAllInlineTrendRows(mainTable);
+      if (opened) return;
+
+      const colCount = row.children.length;
+      const inlineRow = document.createElement("tr");
+      inlineRow.className = "inline-trend-row";
+      inlineRow.innerHTML = `<td colspan="${colCount}"></td>`;
+
+      const cell = inlineRow.firstElementChild;
+      const title = source.querySelector(".trend-title")?.textContent?.trim() || "시청률 추이";
+      const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
+      const tableEl = source.querySelector(".trend-table");
+      const tableHtml = tableEl ? tableEl.outerHTML : "<p class='trend-empty'>시청률 추이 데이터를 찾지 못했습니다.</p>";
+
+      cell.innerHTML = `
+        <div class="inline-trend-card">
+          <div class="inline-trend-head">${title} · 시청률 추이</div>
+          ${metaHtml}
+          <div class="trend-chart-wrap"><canvas height="120"></canvas></div>
+          <div class="trend-table-wrap">${tableHtml}</div>
+        </div>
+      `;
+
+      row.insertAdjacentElement("afterend", inlineRow);
+      row.classList.add("is-expanded");
+
+      const canvas = inlineRow.querySelector("canvas");
+      const trendTable = inlineRow.querySelector(".trend-table");
+      if (canvas && trendTable && window.Chart) {
+        buildTrendChartFromTable(canvas, trendTable);
+      }
+
+      if (window.gsap) {
+        gsap.from(inlineRow.querySelector(".inline-trend-card"), {
+          y: 8,
+          opacity: 0,
+          duration: 0.2,
+          ease: "power1.out"
+        });
+      }
+    });
+  });
+}
+
+function closeAllInlineTrendRows(mainTable) {
+  mainTable.querySelectorAll("tbody tr.inline-trend-row").forEach((r) => r.remove());
+  mainTable.querySelectorAll("tbody tr.is-expanded").forEach((r) => r.classList.remove("is-expanded"));
+}
+
+function buildTrendChartFromTable(canvas, table) {
   const rows = Array.from(table.querySelectorAll("tbody tr"));
   if (!rows.length) return;
-
   const labels = rows.map((r) => r.children[0]?.textContent?.trim() || "");
   const data = rows.map((r) => Number(r.children[2]?.textContent?.trim() || 0));
 
-  const wrap = document.createElement("div");
-  wrap.className = "trend-chart-wrap";
-  wrap.innerHTML = `<canvas height="120"></canvas>`;
-  table.parentNode.insertBefore(wrap, table);
-
-  const ctx = wrap.querySelector("canvas");
-  new Chart(ctx, {
+  new Chart(canvas, {
     type: "line",
     data: {
       labels,
-      datasets: [
-        {
-          data,
-          borderColor: "#3451b2",
-          backgroundColor: "rgba(52,81,178,0.12)",
-          pointRadius: 2,
-          pointHoverRadius: 3,
-          borderWidth: 2,
-          tension: 0.3,
-          fill: true
-        }
-      ]
+      datasets: [{
+        data,
+        borderColor: "#3451b2",
+        backgroundColor: "rgba(52,81,178,0.12)",
+        pointRadius: 2,
+        pointHoverRadius: 3,
+        borderWidth: 2,
+        tension: 0.3,
+        fill: true
+      }]
     },
     options: {
       responsive: true,
