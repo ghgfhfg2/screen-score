@@ -14,7 +14,7 @@ plugins:
 
 # 댓글(Disqus)
 disqus:
-  shortname: ""
+  shortname: "sooyadev"
 
 # 기본 URL 구조
 permalink: /:categories/:title/
