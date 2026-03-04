@@ -39,6 +39,11 @@ def collect_rows(text: str):
         channel = m.group(2).strip()
         title = m.group(3).strip()
         rating = float(m.group(4))
+
+        # '(재방송)' 표기 항목 제외
+        if "재방송" in title:
+            continue
+
         key = (rank, channel, title)
         if key in seen:
             continue
