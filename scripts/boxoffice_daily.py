@@ -46,6 +46,7 @@ def fetch_daily(target_date: dt.date):
         rows.append(
             {
                 "rank": int(r.get("rank", 0) or 0),
+                "movieCd": r.get("movieCd", "").strip(),
                 "movieNm": r.get("movieNm", "").strip(),
                 "audiCnt": int(r.get("audiCnt", 0) or 0),
                 "audiAcc": int(r.get("audiAcc", 0) or 0),
@@ -66,7 +67,7 @@ def write_csv(target_date: dt.date, rows):
     with p.open("w", encoding="utf-8", newline="") as f:
         wr = csv.DictWriter(
             f,
-            fieldnames=["date", "rank", "movieNm", "audiCnt", "audiAcc", "salesAmt", "openDt"],
+            fieldnames=["date", "rank", "movieCd", "movieNm", "audiCnt", "audiAcc", "salesAmt", "openDt"],
         )
         wr.writeheader()
         for r in rows:
@@ -74,20 +75,60 @@ def write_csv(target_date: dt.date, rows):
     return p
 
 
-def fetch_7day_trend(movie_name: str, end_date: dt.date):
+def fetch_daily_cached(target_date: dt.date, cache: dict):
+    key = post_date_str(target_date)
+    if key not in cache:
+        cache[key] = fetch_daily(target_date)
+    return cache[key]
+
+
+def find_audi_cnt(rows, movie_cd: str, movie_name: str) -> int:
+    for r in rows:
+        if movie_cd and r.get("movieCd") == movie_cd:
+            return r.get("audiCnt", 0)
+    for r in rows:
+        if r.get("movieNm") == movie_name:
+            return r.get("audiCnt", 0)
+    return 0
+
+
+def fetch_7day_trend(movie_cd: str, movie_name: str, end_date: dt.date, cache: dict):
     out = []
     for i in range(6, -1, -1):
         d = end_date - dt.timedelta(days=i)
         try:
-            rows = fetch_daily(d)
+            rows = fetch_daily_cached(d, cache)
         except Exception:
             continue
-        val = 0
-        for r in rows:
-            if r["movieNm"] == movie_name:
-                val = r["audiCnt"]
-                break
+        val = find_audi_cnt(rows, movie_cd, movie_name)
         out.append({"date": post_date_str(d), "audiCnt": val})
+    return out
+
+
+def fetch_full_trend(movie_cd: str, movie_name: str, open_dt: str, end_date: dt.date, cache: dict):
+    try:
+        start = dt.datetime.strptime(open_dt, "%Y-%m-%d").date() if open_dt else (end_date - dt.timedelta(days=30))
+    except Exception:
+        start = end_date - dt.timedelta(days=30)
+
+    if start > end_date:
+        start = end_date
+
+    # 비정상적으로 긴 기간 요청 방지(재개봉/오래된 개봉일 등)
+    if (end_date - start).days > 730:
+        start = end_date - dt.timedelta(days=730)
+
+    out = []
+    d = start
+    while d <= end_date:
+        try:
+            rows = fetch_daily_cached(d, cache)
+        except Exception:
+            d += dt.timedelta(days=1)
+            continue
+        val = find_audi_cnt(rows, movie_cd, movie_name)
+        out.append({"date": post_date_str(d), "audiCnt": val})
+        d += dt.timedelta(days=1)
     return out
 
 
@@ -95,18 +136,20 @@ def write_trend_csv(target_date: dt.date, trend_map):
     TREND_DIR.mkdir(parents=True, exist_ok=True)
     p = TREND_DIR / f"{post_date_str(target_date)}.csv"
     with p.open("w", encoding="utf-8", newline="") as f:
-        wr = csv.DictWriter(f, fieldnames=["date", "movieNm", "trendDate", "audiCnt"])
+        wr = csv.DictWriter(f, fieldnames=["date", "kind", "movieNm", "trendDate", "audiCnt"])
         wr.writeheader()
-        for name, arr in trend_map.items():
-            for it in arr:
-                wr.writerow(
-                    {
-                        "date": post_date_str(target_date),
-                        "movieNm": name,
-                        "trendDate": it["date"],
-                        "audiCnt": it["audiCnt"],
-                    }
-                )
+        for name, kinds in trend_map.items():
+            for kind, arr in kinds.items():
+                for it in arr:
+                    wr.writerow(
+                        {
+                            "date": post_date_str(target_date),
+                            "kind": kind,
+                            "movieNm": name,
+                            "trendDate": it["date"],
+                            "audiCnt": it["audiCnt"],
+                        }
+                    )
     return p
 
 
@@ -143,44 +186,50 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
             sign = "+" if x > 0 else ""
             d7 = f"{sign}{fmt_int(x)}"
 
-        btn = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-{i}\">박스오피스 추이 보기</button>"
-        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | 영화 | {d1} | {d7} | {btn} |")
+        btn_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-week-{i}\">주간 추이보기</button>"
+        btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">전체 추이보기</button>"
+        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | 영화 | {d1} | {d7} | {btn_week} {btn_full} |")
 
     trend_sections = []
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
-        arr = trend_map.get(name, [])
-        if arr:
-            latest = arr[-1]["audiCnt"]
-            best = max(x["audiCnt"] for x in arr)
-            avg = int(sum(x["audiCnt"] for x in arr) / len(arr))
-            body = (
-                f"<div class=\"trend-meta\">"
-                f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
-                f"<span>최고 <strong>{fmt_int(best)}명</strong></span>"
-                f"<span>평균 <strong>{fmt_int(avg)}명</strong></span>"
-                f"</div>"
-                f"<div class=\"trend-table-wrap\">"
-                f"<table class=\"trend-table\">"
-                f"<thead><tr><th>날짜</th><th>일일관객수</th><th>보조값</th></tr></thead>"
-                f"<tbody>"
-                + "".join(
-                    [
-                        f"<tr><td>{it['date']}</td><td>{it['audiCnt']}</td><td>{it['audiCnt']}</td></tr>"
-                        for it in arr
-                    ]
-                )
-                + "</tbody></table></div>"
-            )
-        else:
-            body = "<p class=\"trend-empty\">이 영화는 박스오피스 추이를 제공하지 않습니다.</p>"
 
-        trend_sections.append(
-            f"<details class=\"trend-details\" id=\"trend-{i}\">"
-            f"<summary><span class=\"trend-title\">{name}</span></summary>"
-            f"{body}"
-            f"</details>"
-        )
+        for kind, detail_id, label in [
+            ("week", f"trend-week-{i}", "주간 추이"),
+            ("full", f"trend-full-{i}", "전체 추이"),
+        ]:
+            arr = trend_map.get(name, {}).get(kind, [])
+            if arr:
+                latest = arr[-1]["audiCnt"]
+                best = max(x["audiCnt"] for x in arr)
+                avg = int(sum(x["audiCnt"] for x in arr) / len(arr))
+                body = (
+                    f"<div class=\"trend-meta\">"
+                    f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
+                    f"<span>최고 <strong>{fmt_int(best)}명</strong></span>"
+                    f"<span>평균 <strong>{fmt_int(avg)}명</strong></span>"
+                    f"</div>"
+                    f"<div class=\"trend-table-wrap\">"
+                    f"<table class=\"trend-table\">"
+                    f"<thead><tr><th>날짜</th><th>일일관객수</th></tr></thead>"
+                    f"<tbody>"
+                    + "".join(
+                        [
+                            f"<tr><td>{it['date']}</td><td>{it['audiCnt']}</td></tr>"
+                            for it in arr
+                        ]
+                    )
+                    + "</tbody></table></div>"
+                )
+            else:
+                body = "<p class=\"trend-empty\">이 영화는 박스오피스 추이를 제공하지 않습니다.</p>"
+
+            trend_sections.append(
+                f"<details class=\"trend-details\" id=\"{detail_id}\">"
+                f"<summary><span class=\"trend-title\">{name} · {label}</span></summary>"
+                f"{body}"
+                f"</details>"
+            )
 
     content = f"""---
 layout: post
@@ -226,8 +275,15 @@ def main():
     prev_week_map = to_map(prev_week_rows)
 
     trend_map = {}
+    daily_cache = {}
     for r in rows:
-        trend_map[r["movieNm"]] = fetch_7day_trend(r["movieNm"], target_date)
+        name = r["movieNm"]
+        movie_cd = r.get("movieCd", "")
+        open_dt = r.get("openDt", "")
+        trend_map[name] = {
+            "week": fetch_7day_trend(movie_cd, name, target_date, daily_cache),
+            "full": fetch_full_trend(movie_cd, name, open_dt, target_date, daily_cache),
+        }
 
     csv_path = write_csv(target_date, rows)
     trend_csv_path = write_trend_csv(target_date, trend_map)
