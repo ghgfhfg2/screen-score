@@ -51,14 +51,16 @@ function setupMainTableControls(mainTable) {
 
   const channels = [...new Set(rows.map((r) => r.children[channelIdx]?.textContent?.trim()).filter(Boolean))];
 
+  const hasMeaningfulChannelFilter = channels.length > 1;
+
   const controls = document.createElement("div");
   controls.className = "trend-controls";
   controls.innerHTML = `
     <input type="text" class="trend-search" placeholder="제목 검색" />
-    <select class="trend-channel-filter">
+    ${hasMeaningfulChannelFilter ? `<select class="trend-channel-filter">
       <option value="">전체 채널</option>
       ${channels.map((c) => `<option value="${c}">${c}</option>`).join("")}
-    </select>
+    </select>` : ""}
   `;
 
   mainTable.parentNode.insertBefore(controls, mainTable);
@@ -68,7 +70,7 @@ function setupMainTableControls(mainTable) {
 
   const applyFilter = () => {
     const q = searchInput.value.trim().toLowerCase();
-    const ch = channelSelect.value;
+    const ch = channelSelect ? channelSelect.value : "";
 
     rows.forEach((row) => {
       const title = row.children[titleIdx]?.textContent?.trim().toLowerCase() || "";
@@ -86,7 +88,9 @@ function setupMainTableControls(mainTable) {
   };
 
   searchInput.addEventListener("input", applyFilter);
-  channelSelect.addEventListener("change", applyFilter);
+  if (channelSelect) {
+    channelSelect.addEventListener("change", applyFilter);
+  }
 }
 
 function setupInlineTrendAccordion(mainTable) {
