@@ -111,14 +111,14 @@ function setupInlineTrendAccordion(mainTable) {
       inlineRow.innerHTML = `<td colspan="${colCount}"></td>`;
 
       const cell = inlineRow.firstElementChild;
-      const title = source.querySelector(".trend-title")?.textContent?.trim() || "시청률 추이";
+      const title = source.querySelector(".trend-title")?.textContent?.trim() || "추이";
       const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
       const tableEl = source.querySelector(".trend-table");
-      const emptyHtml = "<p class='trend-empty'>이 드라마는 시청률 추이를 제공하지 않습니다.</p>";
+      const emptyHtml = "<p class='trend-empty'>추이 데이터를 제공하지 않습니다.</p>";
 
       cell.innerHTML = `
         <div class="inline-trend-card">
-          <div class="inline-trend-head">${title} · 시청률 추이</div>
+          <div class="inline-trend-head">${title}</div>
           ${tableEl ? metaHtml : ""}
           ${tableEl ? '<div class="trend-chart-wrap"><canvas height="120"></canvas></div>' : emptyHtml}
         </div>
@@ -152,8 +152,16 @@ function closeAllInlineTrendRows(mainTable) {
 function buildTrendChartFromTable(canvas, table) {
   const rows = Array.from(table.querySelectorAll("tbody tr"));
   if (!rows.length) return;
+
+  const thText = Array.from(table.querySelectorAll("thead th")).map((th) => (th.textContent || "").trim());
+  const valueIdx = Math.max(1, thText.length - 1); // 보통 마지막 열이 값
+  const isPercent = thText.join(" ").includes("시청률");
+
   const labels = rows.map((r) => r.children[0]?.textContent?.trim() || "");
-  const data = rows.map((r) => Number(r.children[2]?.textContent?.trim() || 0));
+  const data = rows.map((r) => {
+    const raw = r.children[valueIdx]?.textContent?.trim() || "0";
+    return Number(raw.replace(/,/g, "")) || 0;
+  });
 
   new Chart(canvas, {
     type: "line",
@@ -176,7 +184,12 @@ function buildTrendChartFromTable(canvas, table) {
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
-        y: { grid: { color: "#eef2fb" }, ticks: { callback: (v) => `${v}%` } }
+        y: {
+          grid: { color: "#eef2fb" },
+          ticks: {
+            callback: (v) => isPercent ? `${v}%` : `${Number(v).toLocaleString()}명`
+          }
+        }
       }
     }
   });
