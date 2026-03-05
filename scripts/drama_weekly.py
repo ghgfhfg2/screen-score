@@ -226,8 +226,8 @@ def render_table(rows, prev_map, thumbnail_map):
     sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 제목 | 시청률(%) | 채널 | 전주 대비 | 시청률 추이 |")
-    lines.append("|---:|---|---:|---|---:|---|")
+    lines.append("| 통합순위 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |")
+    lines.append("|---:|---|---|---:|---:|---|")
 
     for i, r in enumerate(sorted_rows, start=1):
         prev = prev_map.get((r["segment"], r["title"]))
@@ -240,7 +240,7 @@ def render_table(rows, prev_map, thumbnail_map):
 
         trend_link = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-{i}\">시청률 추이 보기</button>"
 
-        lines.append(f"| {i} | {r['title']} | {r['rating']:.3f} | {r['channel']} | {diff} | {trend_link} |")
+        lines.append(f"| {i} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
 
     return "\n".join(lines), sorted_rows
 

@@ -43,7 +43,7 @@ function setupMainTableControls(mainTable) {
   const rows = Array.from(mainTable.querySelectorAll("tbody tr"));
   if (!rows.length) return;
 
-  const channels = [...new Set(rows.map((r) => r.children[3]?.textContent?.trim()).filter(Boolean))];
+  const channels = [...new Set(rows.map((r) => r.children[1]?.textContent?.trim()).filter(Boolean))];
 
   const controls = document.createElement("div");
   controls.className = "trend-controls";
@@ -65,8 +65,8 @@ function setupMainTableControls(mainTable) {
     const ch = channelSelect.value;
 
     rows.forEach((row) => {
-      const title = row.children[1]?.textContent?.trim().toLowerCase() || "";
-      const channel = row.children[3]?.textContent?.trim() || "";
+      const title = row.children[2]?.textContent?.trim().toLowerCase() || "";
+      const channel = row.children[1]?.textContent?.trim() || "";
       const okQ = !q || title.includes(q);
       const okCh = !ch || channel === ch;
       row.style.display = okQ && okCh ? "" : "none";
