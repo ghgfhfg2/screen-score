@@ -16,12 +16,6 @@ plugins:
 disqus:
   shortname: "sooyadev"
 
-# 간단 로그인 게이트(정적 사이트용, 강한 보안 아님)
-auth:
-  enabled: true
-  login_path: "/login/"
-  password_hash_sha256: "23e6443ff5042cf5a1966d55dd6f350e496fb85eafff5b513f6e5a18380fab7a"
-
 # 기본 URL 구조
 permalink: /:categories/:title/
 
