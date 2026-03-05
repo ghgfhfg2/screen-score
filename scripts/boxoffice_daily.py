@@ -115,7 +115,8 @@ def fmt_int(n: int) -> str:
 
 
 def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
-    today = post_date_str(dt.date.today())
+    now = dt.datetime.now()
+    today = now.date().isoformat()
     post_path = POSTS_DIR / f"{today}-daily-boxoffice-{post_date_str(target_date)}.md"
 
     lines = []
@@ -184,7 +185,7 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
     content = f"""---
 layout: post
 title: "일일 박스오피스 ({post_date_str(target_date)})"
-date: {today} 12:00:00 +0900
+date: {now.strftime('%Y-%m-%d %H:%M:%S')} +0900
 categories: [boxoffice]
 tags: [daily, kobis, movie]
 comments: true
