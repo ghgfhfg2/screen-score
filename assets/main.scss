@@ -216,6 +216,45 @@ body.modern-ui {
   color: var(--muted);
 }
 
+.login-wrap {
+  max-width: 420px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.login-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.login-form input {
+  flex: 1;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 0 12px;
+}
+
+.login-form button {
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 14px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-error {
+  color: #c02727;
+  margin-top: 10px;
+}
+
 @media (max-width: 860px) {
   .page-content > .wrapper > table,
   .page-content table {
