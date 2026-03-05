@@ -93,60 +93,66 @@ function setupInlineTrendAccordion(mainTable) {
   const bodyRows = Array.from(mainTable.querySelectorAll("tbody tr"));
 
   bodyRows.forEach((row) => {
-    const btn = row.querySelector(".trend-btn");
-    if (!btn) return;
+    const btns = Array.from(row.querySelectorAll(".trend-btn"));
+    if (!btns.length) return;
 
-    btn.addEventListener("click", () => {
-      const trendId = btn.getAttribute("data-trend-id");
-      const source = document.getElementById(trendId);
-      if (!source) return;
+    btns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const trendId = btn.getAttribute("data-trend-id");
+        const source = document.getElementById(trendId);
+        if (!source) return;
 
-      const opened = row.classList.contains("is-expanded");
-      closeAllInlineTrendRows(mainTable);
-      if (opened) return;
+        const alreadyOpen = row.classList.contains("is-expanded") && row.dataset.openTrendId === trendId;
+        closeAllInlineTrendRows(mainTable);
+        if (alreadyOpen) return;
 
-      const colCount = row.children.length;
-      const inlineRow = document.createElement("tr");
-      inlineRow.className = "inline-trend-row";
-      inlineRow.innerHTML = `<td colspan="${colCount}"></td>`;
+        const colCount = row.children.length;
+        const inlineRow = document.createElement("tr");
+        inlineRow.className = "inline-trend-row";
+        inlineRow.innerHTML = `<td colspan="${colCount}"></td>`;
 
-      const cell = inlineRow.firstElementChild;
-      const title = source.querySelector(".trend-title")?.textContent?.trim() || "추이";
-      const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
-      const tableEl = source.querySelector(".trend-table");
-      const emptyHtml = "<p class='trend-empty'>추이 데이터를 제공하지 않습니다.</p>";
+        const cell = inlineRow.firstElementChild;
+        const title = source.querySelector(".trend-title")?.textContent?.trim() || "추이";
+        const metaHtml = source.querySelector(".trend-meta")?.outerHTML || "";
+        const tableEl = source.querySelector(".trend-table");
+        const emptyHtml = "<p class='trend-empty'>추이 데이터를 제공하지 않습니다.</p>";
 
-      cell.innerHTML = `
-        <div class="inline-trend-card">
-          <div class="inline-trend-head">${title}</div>
-          ${tableEl ? metaHtml : ""}
-          ${tableEl ? '<div class="trend-chart-wrap"><canvas height="120"></canvas></div>' : emptyHtml}
-        </div>
-      `;
+        cell.innerHTML = `
+          <div class="inline-trend-card">
+            <div class="inline-trend-head">${title}</div>
+            ${tableEl ? metaHtml : ""}
+            ${tableEl ? '<div class="trend-chart-wrap"><canvas height="120"></canvas></div>' : emptyHtml}
+          </div>
+        `;
 
-      row.insertAdjacentElement("afterend", inlineRow);
-      row.classList.add("is-expanded");
+        row.insertAdjacentElement("afterend", inlineRow);
+        row.classList.add("is-expanded");
+        row.dataset.openTrendId = trendId;
 
-      const canvas = inlineRow.querySelector("canvas");
-      if (canvas && tableEl && window.Chart) {
-        buildTrendChartFromTable(canvas, tableEl);
-      }
+        const canvas = inlineRow.querySelector("canvas");
+        if (canvas && tableEl && window.Chart) {
+          buildTrendChartFromTable(canvas, tableEl);
+        }
 
-      if (window.gsap) {
-        gsap.from(inlineRow.querySelector(".inline-trend-card"), {
-          y: 8,
-          opacity: 0,
-          duration: 0.2,
-          ease: "power1.out"
-        });
-      }
+        if (window.gsap) {
+          gsap.from(inlineRow.querySelector(".inline-trend-card"), {
+            y: 8,
+            opacity: 0,
+            duration: 0.2,
+            ease: "power1.out"
+          });
+        }
+      });
     });
   });
 }
 
 function closeAllInlineTrendRows(mainTable) {
   mainTable.querySelectorAll("tbody tr.inline-trend-row").forEach((r) => r.remove());
-  mainTable.querySelectorAll("tbody tr.is-expanded").forEach((r) => r.classList.remove("is-expanded"));
+  mainTable.querySelectorAll("tbody tr.is-expanded").forEach((r) => {
+    r.classList.remove("is-expanded");
+    delete r.dataset.openTrendId;
+  });
 }
 
 function buildTrendChartFromTable(canvas, table) {
