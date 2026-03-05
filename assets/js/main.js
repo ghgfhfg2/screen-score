@@ -3,9 +3,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const details = document.querySelectorAll(".trend-details");
 
   const tables = Array.from(document.querySelectorAll("table"));
-  const mainTable = tables.find((t) =>
-    (t.querySelector("thead th")?.textContent || "").includes("통합순위")
-  );
+  const mainTable = tables.find((t) => {
+    const headText = Array.from(t.querySelectorAll("thead th")).map((th) => th.textContent || "").join(" ");
+    return headText.includes("시청률 추이") || headText.includes("박스오피스 추이");
+  });
 
   if (mainTable) {
     setupMainTableControls(mainTable);
@@ -43,7 +44,12 @@ function setupMainTableControls(mainTable) {
   const rows = Array.from(mainTable.querySelectorAll("tbody tr"));
   if (!rows.length) return;
 
-  const channels = [...new Set(rows.map((r) => r.children[1]?.textContent?.trim()).filter(Boolean))];
+  const ths = Array.from(mainTable.querySelectorAll("thead th")).map((th) => (th.textContent || "").trim());
+  const titleIdx = ths.findIndex((t) => t === "제목");
+  const channelIdx = ths.findIndex((t) => t === "채널");
+  if (titleIdx < 0 || channelIdx < 0) return;
+
+  const channels = [...new Set(rows.map((r) => r.children[channelIdx]?.textContent?.trim()).filter(Boolean))];
 
   const controls = document.createElement("div");
   controls.className = "trend-controls";
@@ -65,8 +71,8 @@ function setupMainTableControls(mainTable) {
     const ch = channelSelect.value;
 
     rows.forEach((row) => {
-      const title = row.children[2]?.textContent?.trim().toLowerCase() || "";
-      const channel = row.children[1]?.textContent?.trim() || "";
+      const title = row.children[titleIdx]?.textContent?.trim().toLowerCase() || "";
+      const channel = row.children[channelIdx]?.textContent?.trim() || "";
       const okQ = !q || title.includes(q);
       const okCh = !ch || channel === ch;
       row.style.display = okQ && okCh ? "" : "none";
