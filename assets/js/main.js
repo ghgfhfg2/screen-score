@@ -177,8 +177,9 @@ function buildTrendChartFromTable(canvas, table) {
         data,
         borderColor: "#3451b2",
         backgroundColor: "rgba(52,81,178,0.12)",
-        pointRadius: 2,
-        pointHoverRadius: 3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHitRadius: 24,
         borderWidth: 2,
         tension: 0.3,
         fill: true
@@ -187,7 +188,23 @@ function buildTrendChartFromTable(canvas, table) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            label: (ctx) => {
+              const v = Number(ctx.parsed.y || 0);
+              return isPercent ? ` ${v}%` : ` ${v.toLocaleString()}명`;
+            }
+          }
+        }
+      },
       scales: {
         x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
         y: {
