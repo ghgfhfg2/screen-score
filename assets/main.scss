@@ -107,6 +107,21 @@ body.modern-ui {
   cursor: pointer;
 }
 
+.movie-info-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.movie-info-toggle:hover {
+  text-decoration: underline;
+}
+
 .trend-btn:hover {
   background: #e3ebff;
   text-decoration: none;
@@ -214,6 +229,21 @@ body.modern-ui {
 .trend-empty {
   margin: 10px 0 4px;
   color: var(--muted);
+}
+
+.movie-info-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.movie-info-table th {
+  width: 120px;
+  text-align: left;
+}
+
+.movie-cast-table th,
+.movie-cast-table td {
+  text-align: left;
 }
 
 @media (max-width: 860px) {

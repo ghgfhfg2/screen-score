@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mainTable) {
     setupMainTableControls(mainTable);
     setupInlineTrendAccordion(mainTable);
+    setupMovieInfoAccordion(mainTable);
   }
 
   if (window.gsap) {
@@ -137,6 +138,56 @@ function setupInlineTrendAccordion(mainTable) {
         if (canvas && tableEl && window.Chart) {
           buildTrendChartFromTable(canvas, tableEl);
         }
+
+        if (window.gsap) {
+          gsap.from(inlineRow.querySelector(".inline-trend-card"), {
+            y: 8,
+            opacity: 0,
+            duration: 0.2,
+            ease: "power1.out"
+          });
+        }
+      });
+    });
+  });
+}
+
+function setupMovieInfoAccordion(mainTable) {
+  const bodyRows = Array.from(mainTable.querySelectorAll("tbody tr"));
+
+  bodyRows.forEach((row) => {
+    const toggles = Array.from(row.querySelectorAll(".movie-info-toggle"));
+    if (!toggles.length) return;
+
+    toggles.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const infoId = btn.getAttribute("data-info-id");
+        const source = document.getElementById(infoId);
+        if (!source) return;
+
+        const alreadyOpen = row.classList.contains("is-expanded") && row.dataset.openTrendId === infoId;
+        closeAllInlineTrendRows(mainTable);
+        if (alreadyOpen) return;
+
+        const colCount = row.children.length;
+        const inlineRow = document.createElement("tr");
+        inlineRow.className = "inline-trend-row";
+        inlineRow.innerHTML = `<td colspan="${colCount}"></td>`;
+
+        const cell = inlineRow.firstElementChild;
+        const title = source.querySelector(".trend-title")?.textContent?.trim() || "상세 정보";
+        const infoWrap = source.querySelector(".movie-info-wrap")?.outerHTML || "<p class='trend-empty'>상세 정보를 제공하지 않습니다.</p>";
+
+        cell.innerHTML = `
+          <div class="inline-trend-card movie-info-card">
+            <div class="inline-trend-head">${title}</div>
+            ${infoWrap}
+          </div>
+        `;
+
+        row.insertAdjacentElement("afterend", inlineRow);
+        row.classList.add("is-expanded");
+        row.dataset.openTrendId = infoId;
 
         if (window.gsap) {
           gsap.from(inlineRow.querySelector(".inline-trend-card"), {

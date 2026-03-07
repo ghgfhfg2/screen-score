@@ -14,6 +14,7 @@ POSTS_DIR = ROOT / "_posts"
 
 KOBIS_API_KEY = os.getenv("KOBIS_API_KEY", "fe8372a6229f81c0ada051da749bb9d5")
 KOBIS_DAILY_URL = "https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json"
+KOBIS_MOVIE_INFO_URL = "https://kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json"
 
 
 def ymd(d: dt.date) -> str:
@@ -80,6 +81,43 @@ def fetch_daily_cached(target_date: dt.date, cache: dict):
     if key not in cache:
         cache[key] = fetch_daily(target_date)
     return cache[key]
+
+
+def fetch_movie_info(movie_cd: str, cache: dict):
+    if not movie_cd:
+        return {"director": "-", "casts": []}
+
+    if movie_cd in cache:
+        return cache[movie_cd]
+
+    query = urllib.parse.urlencode({"key": KOBIS_API_KEY, "movieCd": movie_cd})
+    url = f"{KOBIS_MOVIE_INFO_URL}?{query}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+
+    try:
+        with urllib.request.urlopen(req, timeout=20) as res:
+            data = json.loads(res.read().decode("utf-8", errors="ignore"))
+        info = data.get("movieInfoResult", {}).get("movieInfo", {})
+        directors = info.get("directors", []) or []
+        actors = info.get("actors", []) or []
+
+        director = ", ".join([d.get("peopleNm", "").strip() for d in directors if d.get("peopleNm")]).strip()
+        if not director:
+            director = "-"
+
+        casts = []
+        for a in actors[:10]:
+            actor = (a.get("peopleNm") or "").strip()
+            role = (a.get("cast") or "").strip()
+            if actor:
+                casts.append({"actor": actor, "role": role})
+
+        out = {"director": director, "casts": casts}
+    except Exception:
+        out = {"director": "-", "casts": []}
+
+    cache[movie_cd] = out
+    return out
 
 
 def find_audi_cnt(rows, movie_cd: str, movie_name: str) -> int:
@@ -157,7 +195,7 @@ def fmt_int(n: int) -> str:
     return f"{n:,}"
 
 
-def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
+def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map, movie_info_map):
     now = dt.datetime.now()
     today = now.date().isoformat()
     post_path = POSTS_DIR / f"{today}-daily-boxoffice-{post_date_str(target_date)}.md"
@@ -193,11 +231,40 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
                     open_dt_display = open_dt_raw
             except Exception:
                 open_dt_display = open_dt_raw
-        lines.append(f"| {r['rank']} | {name} | {open_dt_display} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | {d1} | {btn_full} {btn_acc} |")
+        title_btn = f"<button class=\"movie-info-toggle\" type=\"button\" data-info-id=\"movie-info-{i}\">{name}</button>"
+        lines.append(f"| {r['rank']} | {title_btn} | {open_dt_display} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | {d1} | {btn_full} {btn_acc} |")
 
     trend_sections = []
+    movie_info_sections = []
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
+
+        info = movie_info_map.get(name, {"director": "-", "casts": []})
+        cast_rows = "".join(
+            [
+                f"<tr><td>{(c.get('role') or '-')}</td><td>{c.get('actor')}</td></tr>"
+                for c in info.get("casts", [])
+                if c.get("actor")
+            ]
+        )
+        if not cast_rows:
+            cast_rows = "<tr><td>-</td><td>정보 없음</td></tr>"
+
+        movie_info_sections.append(
+            f"<details class=\"movie-info-details\" id=\"movie-info-{i}\">"
+            f"<summary><span class=\"trend-title\">{name} · 상세 정보</span></summary>"
+            f"<div class=\"movie-info-wrap\">"
+            f"<table class=\"trend-table movie-info-table\">"
+            f"<tbody>"
+            f"<tr><th>감독명</th><td>{info.get('director', '-')}</td></tr>"
+            f"</tbody></table>"
+            f"<table class=\"trend-table movie-cast-table\">"
+            f"<thead><tr><th>배역</th><th>배우명</th></tr></thead>"
+            f"<tbody>{cast_rows}</tbody>"
+            f"</table>"
+            f"</div>"
+            f"</details>"
+        )
 
         for kind, detail_id, label in [
             ("full", f"trend-full-{i}", "일 관객 수 추이"),
@@ -289,6 +356,12 @@ comments: true
 {chr(10).join(trend_sections)}
 </section>
 
+<section class="movie-info-section" style="display:none;">
+## 영화별 상세 정보
+
+{chr(10).join(movie_info_sections)}
+</section>
+
 ---
 
 ### 데이터 출처 및 기준
@@ -314,7 +387,9 @@ def main():
     prev_week_map = to_map(prev_week_rows)
 
     trend_map = {}
+    movie_info_map = {}
     daily_cache = {}
+    movie_info_cache = {}
     for r in rows:
         name = r["movieNm"]
         movie_cd = r.get("movieCd", "")
@@ -323,10 +398,11 @@ def main():
             "week": fetch_7day_trend(movie_cd, name, target_date, daily_cache),
             "full": fetch_full_trend(movie_cd, name, open_dt, target_date, daily_cache),
         }
+        movie_info_map[name] = fetch_movie_info(movie_cd, movie_info_cache)
 
     csv_path = write_csv(target_date, rows)
     trend_csv_path = write_trend_csv(target_date, trend_map)
-    post_path = make_post(target_date, rows, prev_map, prev_week_map, trend_map)
+    post_path = make_post(target_date, rows, prev_map, prev_week_map, trend_map, movie_info_map)
 
     print(f"saved: {csv_path}")
     print(f"saved: {trend_csv_path}")
