@@ -163,8 +163,8 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
     post_path = POSTS_DIR / f"{today}-daily-boxoffice-{post_date_str(target_date)}.md"
 
     lines = []
-    lines.append("| 순위 | 제목 | 개봉일 | 일일관객수 | 누적관객수 | 채널 | 전일 대비 | 박스오피스 추이 |")
-    lines.append("|---:|---|---:|---:|---:|---|---:|---|")
+    lines.append("| 순위 | 제목 | 개봉일 | 일일관객수 | 누적관객수 | 전일 대비 | 박스오피스 추이 |")
+    lines.append("|---:|---|---:|---:|---:|---:|---|")
 
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
@@ -181,8 +181,19 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
 
         btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">일 관객 수 추이보기</button>"
         btn_acc = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">누적 관객 수 추이보기</button>"
-        open_dt = r.get("openDt") or "-"
-        lines.append(f"| {r['rank']} | {name} | {open_dt} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_full} {btn_acc} |")
+        open_dt_raw = r.get("openDt") or ""
+        open_dt_display = "-"
+        if open_dt_raw:
+            try:
+                od = dt.datetime.strptime(open_dt_raw, "%Y-%m-%d").date()
+                days = (target_date - od).days
+                if days >= 0:
+                    open_dt_display = f"{open_dt_raw} (+{days}일)"
+                else:
+                    open_dt_display = open_dt_raw
+            except Exception:
+                open_dt_display = open_dt_raw
+        lines.append(f"| {r['rank']} | {name} | {open_dt_display} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | {d1} | {btn_full} {btn_acc} |")
 
     trend_sections = []
     for i, r in enumerate(rows, start=1):
