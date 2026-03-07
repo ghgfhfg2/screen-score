@@ -186,47 +186,42 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
             sign = "+" if x > 0 else ""
             d7 = f"{sign}{fmt_int(x)}"
 
-        btn_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-week-{i}\">주간 관객 추이보기</button>"
-        btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">전체 관객 추이보기</button>"
-        btn_acc_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-week-{i}\">주간 누적관객 추이보기</button>"
-        btn_acc_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">전체 누적관객 추이보기</button>"
-        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_week} {btn_full} {btn_acc_week} {btn_acc_full} |")
+        btn_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-week-{i}\">주간 추이보기</button>"
+        btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">전체 추이보기</button>"
+        btn_acc = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">누적관객 추이보기</button>"
+        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_week} {btn_full} {btn_acc} |")
 
     trend_sections = []
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
 
         for kind, detail_id, label in [
-            ("week", f"trend-week-{i}", "주간 관객 추이"),
-            ("full", f"trend-full-{i}", "전체 관객 추이"),
-            ("acc_week", f"trend-acc-week-{i}", "주간 누적관객 추이"),
-            ("acc_full", f"trend-acc-full-{i}", "전체 누적관객 추이"),
+            ("week", f"trend-week-{i}", "주간 추이"),
+            ("full", f"trend-full-{i}", "전체 추이"),
+            ("acc_full", f"trend-acc-full-{i}", "누적관객 추이"),
         ]:
-            source_arr = trend_map.get(name, {}).get("full" if kind in ("acc_week", "acc_full") else kind, [])
+            source_arr = trend_map.get(name, {}).get("full" if kind == "acc_full" else kind, [])
 
-            if kind in ("acc_week", "acc_full"):
-                acc_full = []
+            if kind == "acc_full":
+                arr = []
                 latest_acc = r.get("audiAcc", 0)
                 running = latest_acc - sum(it["audiCnt"] for it in source_arr)
                 for it in source_arr:
                     running += it["audiCnt"]
-                    acc_full.append({"date": it["date"], "audiAcc": running})
-                arr = acc_full[-7:] if kind == "acc_week" else acc_full
+                    arr.append({"date": it["date"], "audiAcc": running})
             else:
                 arr = source_arr
 
             if arr:
-                if kind in ("acc_week", "acc_full"):
+                if kind == "acc_full":
                     latest = arr[-1]["audiAcc"]
                     start_val = arr[0]["audiAcc"]
                     growth = latest - start_val
-                    start_label = "7일 전" if kind == "acc_week" else "개봉 첫날"
-                    growth_label = "7일 증가" if kind == "acc_week" else "누적 증가"
                     body = (
                         f"<div class=\"trend-meta\">"
                         f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
-                        f"<span>{start_label} <strong>{fmt_int(start_val)}명</strong></span>"
-                        f"<span>{growth_label} <strong>{fmt_int(growth)}명</strong></span>"
+                        f"<span>개봉 첫날 <strong>{fmt_int(start_val)}명</strong></span>"
+                        f"<span>누적 증가 <strong>{fmt_int(growth)}명</strong></span>"
                         f"</div>"
                         f"<div class=\"trend-table-wrap\">"
                         f"<table class=\"trend-table\">"
