@@ -180,7 +180,7 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
             d1 = f"{sign}{fmt_int(x)}"
 
         btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">일 관객 수 추이보기</button>"
-        btn_acc = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">누적 관객수 추이보기</button>"
+        btn_acc = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">누적 관객 수 추이보기</button>"
         lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_full} {btn_acc} |")
 
     trend_sections = []
@@ -189,7 +189,7 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
 
         for kind, detail_id, label in [
             ("full", f"trend-full-{i}", "일 관객 수 추이"),
-            ("acc_full", f"trend-acc-full-{i}", "누적 관객수 추이"),
+            ("acc_full", f"trend-acc-full-{i}", "누적 관객 수 추이"),
         ]:
             source_arr = trend_map.get(name, {}).get("full" if kind == "acc_full" else kind, [])
 
