@@ -233,17 +233,46 @@ body.modern-ui {
 
 .movie-info-wrap {
   display: grid;
+  gap: 12px;
+}
+
+.movie-info-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-.movie-info-table th {
-  width: 120px;
-  text-align: left;
+.meta-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+}
+
+.meta-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.meta-item strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .movie-cast-table th,
 .movie-cast-table td {
   text-align: left;
+}
+
+.movie-cast-table td:first-child {
+  width: 45%;
+}
+
+.movie-info-card {
+  background: linear-gradient(180deg, #fbfdff 0%, #f7faff 100%);
 }
 
 @media (max-width: 860px) {
@@ -411,7 +440,8 @@ body.modern-ui {
 
 @media (max-width: 860px) {
   .hero-stats,
-  .post-grid {
+  .post-grid,
+  .movie-info-meta-grid {
     grid-template-columns: 1fr;
   }
 

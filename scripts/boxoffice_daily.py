@@ -100,19 +100,34 @@ def fetch_movie_info(movie_cd: str, cache: dict):
         info = data.get("movieInfoResult", {}).get("movieInfo", {})
         directors = info.get("directors", []) or []
         actors = info.get("actors", []) or []
+        genres = info.get("genres", []) or []
+        nations = info.get("nations", []) or []
+        audits = info.get("audits", []) or []
 
         director = ", ".join([d.get("peopleNm", "").strip() for d in directors if d.get("peopleNm")]).strip()
         if not director:
             director = "-"
 
         casts = []
-        for a in actors[:10]:
+        seen = set()
+        for a in actors[:20]:
             actor = (a.get("peopleNm") or "").strip()
             role = (a.get("cast") or "").strip()
             if actor:
+                key = (role, actor)
+                if key in seen:
+                    continue
+                seen.add(key)
                 casts.append({"actor": actor, "role": role})
 
-        out = {"director": director, "casts": casts}
+        out = {
+            "director": director,
+            "casts": casts,
+            "genres": ", ".join([g.get("genreNm", "").strip() for g in genres if g.get("genreNm")]) or "-",
+            "nations": ", ".join([n.get("nationNm", "").strip() for n in nations if n.get("nationNm")]) or "-",
+            "showTm": info.get("showTm", "") or "-",
+            "watchGrade": ", ".join([a.get("watchGradeNm", "").strip() for a in audits if a.get("watchGradeNm")]) or "-",
+        }
     except Exception:
         out = {"director": "-", "casts": []}
 
@@ -239,7 +254,7 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map, mo
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
 
-        info = movie_info_map.get(name, {"director": "-", "casts": []})
+        info = movie_info_map.get(name, {"director": "-", "casts": [], "genres": "-", "nations": "-", "showTm": "-", "watchGrade": "-"})
         cast_rows = "".join(
             [
                 f"<tr><td>{(c.get('role') or '-')}</td><td>{c.get('actor')}</td></tr>"
@@ -250,14 +265,31 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map, mo
         if not cast_rows:
             cast_rows = "<tr><td>-</td><td>정보 없음</td></tr>"
 
+        show_tm = info.get("showTm", "-")
+        show_tm_text = f"{show_tm}분" if str(show_tm).isdigit() else show_tm
+
+        open_meta = r.get("openDt") or "-"
+        days_text = "-"
+        try:
+            od = dt.datetime.strptime(r.get("openDt", ""), "%Y-%m-%d").date()
+            days = (target_date - od).days
+            if days >= 0:
+                days_text = f"+{days}일"
+        except Exception:
+            pass
+
         movie_info_sections.append(
             f"<details class=\"movie-info-details\" id=\"movie-info-{i}\">"
             f"<summary><span class=\"trend-title\">{name} · 상세 정보</span></summary>"
             f"<div class=\"movie-info-wrap\">"
-            f"<table class=\"trend-table movie-info-table\">"
-            f"<tbody>"
-            f"<tr><th>감독명</th><td>{info.get('director', '-')}</td></tr>"
-            f"</tbody></table>"
+            f"<div class=\"movie-info-meta-grid\">"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">감독</span><strong>{info.get('director', '-')}</strong></div>"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">장르</span><strong>{info.get('genres', '-')}</strong></div>"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">국가</span><strong>{info.get('nations', '-')}</strong></div>"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">상영시간</span><strong>{show_tm_text}</strong></div>"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">관람등급</span><strong>{info.get('watchGrade', '-')}</strong></div>"
+            f"<div class=\"meta-item\"><span class=\"meta-label\">개봉일</span><strong>{open_meta} ({days_text})</strong></div>"
+            f"</div>"
             f"<table class=\"trend-table movie-cast-table\">"
             f"<thead><tr><th>배역</th><th>배우명</th></tr></thead>"
             f"<tbody>{cast_rows}</tbody>"

@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const allRows = document.querySelectorAll("table tbody tr");
   const details = document.querySelectorAll(".trend-details");
 
   const tables = Array.from(document.querySelectorAll("table"));
@@ -22,7 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ease: "power1.out"
     });
 
-    gsap.from(allRows, {
+    const animRows = mainTable ? Array.from(mainTable.querySelectorAll("tbody tr")) : [];
+    gsap.from(animRows, {
       opacity: 0,
       duration: 0.22,
       stagger: 0.02,
