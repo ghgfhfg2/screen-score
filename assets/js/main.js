@@ -186,6 +186,7 @@ function buildTrendChartFromTable(canvas, table) {
         pointHitRadius: 24,
         borderWidth: 2,
         tension: 0.3,
+        cubicInterpolationMode: "monotone",
         fill: true
       }]
     },
@@ -212,6 +213,7 @@ function buildTrendChartFromTable(canvas, table) {
       scales: {
         x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
         y: {
+          min: 0,
           grid: { color: "#eef2fb" },
           ticks: {
             callback: (v) => isPercent ? `${v}%` : `${Number(v).toLocaleString()}명`
