@@ -25,7 +25,7 @@ title: 홈
 
 <section class="category-block category-drama">
   <div class="category-head">
-    <h2>📺 드라마 카테고리</h2>
+    <h2>📺 드라마</h2>
     <span class="category-chip">Drama</span>
   </div>
   <div class="post-grid">
@@ -46,7 +46,7 @@ title: 홈
 
 <section class="category-block category-movie">
   <div class="category-head">
-    <h2>🎬 영화 카테고리</h2>
+    <h2>🎬 영화</h2>
     <span class="category-chip">Movie</span>
   </div>
   <div class="post-grid">
