@@ -188,7 +188,8 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
 
         btn_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-week-{i}\">주간 추이보기</button>"
         btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">전체 추이보기</button>"
-        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_week} {btn_full} |")
+        btn_acc = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-acc-full-{i}\">누적관객 추이보기</button>"
+        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {btn_week} {btn_full} {btn_acc} |")
 
     trend_sections = []
     for i, r in enumerate(rows, start=1):
@@ -197,30 +198,65 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
         for kind, detail_id, label in [
             ("week", f"trend-week-{i}", "주간 추이"),
             ("full", f"trend-full-{i}", "전체 추이"),
+            ("acc_full", f"trend-acc-full-{i}", "누적관객 추이"),
         ]:
-            arr = trend_map.get(name, {}).get(kind, [])
+            source_arr = trend_map.get(name, {}).get("full" if kind == "acc_full" else kind, [])
+
+            if kind == "acc_full":
+                arr = []
+                latest_acc = r.get("audiAcc", 0)
+                running = latest_acc - sum(it["audiCnt"] for it in source_arr)
+                for it in source_arr:
+                    running += it["audiCnt"]
+                    arr.append({"date": it["date"], "audiAcc": running})
+            else:
+                arr = source_arr
+
             if arr:
-                latest = arr[-1]["audiCnt"]
-                best = max(x["audiCnt"] for x in arr)
-                avg = int(sum(x["audiCnt"] for x in arr) / len(arr))
-                body = (
-                    f"<div class=\"trend-meta\">"
-                    f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
-                    f"<span>최고 <strong>{fmt_int(best)}명</strong></span>"
-                    f"<span>평균 <strong>{fmt_int(avg)}명</strong></span>"
-                    f"</div>"
-                    f"<div class=\"trend-table-wrap\">"
-                    f"<table class=\"trend-table\">"
-                    f"<thead><tr><th>날짜</th><th>일일관객수</th></tr></thead>"
-                    f"<tbody>"
-                    + "".join(
-                        [
-                            f"<tr><td>{it['date']}</td><td>{it['audiCnt']}</td></tr>"
-                            for it in arr
-                        ]
+                if kind == "acc_full":
+                    latest = arr[-1]["audiAcc"]
+                    start_val = arr[0]["audiAcc"]
+                    growth = latest - start_val
+                    body = (
+                        f"<div class=\"trend-meta\">"
+                        f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
+                        f"<span>개봉 첫날 <strong>{fmt_int(start_val)}명</strong></span>"
+                        f"<span>누적 증가 <strong>{fmt_int(growth)}명</strong></span>"
+                        f"</div>"
+                        f"<div class=\"trend-table-wrap\">"
+                        f"<table class=\"trend-table\">"
+                        f"<thead><tr><th>날짜</th><th>누적관객수</th></tr></thead>"
+                        f"<tbody>"
+                        + "".join(
+                            [
+                                f"<tr><td>{it['date']}</td><td>{it['audiAcc']}</td></tr>"
+                                for it in arr
+                            ]
+                        )
+                        + "</tbody></table></div>"
                     )
-                    + "</tbody></table></div>"
-                )
+                else:
+                    latest = arr[-1]["audiCnt"]
+                    best = max(x["audiCnt"] for x in arr)
+                    avg = int(sum(x["audiCnt"] for x in arr) / len(arr))
+                    body = (
+                        f"<div class=\"trend-meta\">"
+                        f"<span>최신 <strong>{fmt_int(latest)}명</strong></span>"
+                        f"<span>최고 <strong>{fmt_int(best)}명</strong></span>"
+                        f"<span>평균 <strong>{fmt_int(avg)}명</strong></span>"
+                        f"</div>"
+                        f"<div class=\"trend-table-wrap\">"
+                        f"<table class=\"trend-table\">"
+                        f"<thead><tr><th>날짜</th><th>일일관객수</th></tr></thead>"
+                        f"<tbody>"
+                        + "".join(
+                            [
+                                f"<tr><td>{it['date']}</td><td>{it['audiCnt']}</td></tr>"
+                                for it in arr
+                            ]
+                        )
+                        + "</tbody></table></div>"
+                    )
             else:
                 body = "<p class=\"trend-empty\">이 영화는 박스오피스 추이를 제공하지 않습니다.</p>"
 
