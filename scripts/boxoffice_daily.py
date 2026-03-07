@@ -163,8 +163,8 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
     post_path = POSTS_DIR / f"{today}-daily-boxoffice-{post_date_str(target_date)}.md"
 
     lines = []
-    lines.append("| 순위 | 제목 | 일일관객수 | 채널 | 전일 대비 | 전주 동일요일 대비 | 박스오피스 추이 |")
-    lines.append("|---:|---|---:|---|---:|---:|---|")
+    lines.append("| 순위 | 제목 | 일일관객수 | 누적관객수 | 채널 | 전일 대비 | 전주 동일요일 대비 | 박스오피스 추이 |")
+    lines.append("|---:|---|---:|---:|---|---:|---:|---|")
 
     for i, r in enumerate(rows, start=1):
         name = r["movieNm"]
@@ -188,7 +188,7 @@ def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map):
 
         btn_week = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-week-{i}\">주간 추이보기</button>"
         btn_full = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-full-{i}\">전체 추이보기</button>"
-        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | 영화 | {d1} | {d7} | {btn_week} {btn_full} |")
+        lines.append(f"| {r['rank']} | {name} | {fmt_int(cur)} | {fmt_int(r['audiAcc'])} | 영화 | {d1} | {d7} | {btn_week} {btn_full} |")
 
     trend_sections = []
     for i, r in enumerate(rows, start=1):
