@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "주간 드라마 시청률 (2026-11)"
-date: 2026-03-10 09:00:00 +0900
+date: 2026-03-10 00:40:38 +0900
 categories: [drama-ratings]
 tags: [weekly, naver, nielsen]
 comments: true
