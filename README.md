@@ -35,6 +35,52 @@ python3 scripts/drama_weekly.py
 GitHub Actions에서는 저장소 `Settings > Secrets and variables > Actions`에
 `TMDB_API_KEY` 시크릿을 추가하세요.
 
+## 크론잡 재등록 가이드 (운영용)
+
+크론이 비활성화/유실됐을 때 아래 명령으로 동일하게 재등록하면 됩니다.
+
+### 1) 일일 박스오피스 (매일 12:30, KST)
+
+```bash
+openclaw cron add \
+  --name "daily-boxoffice-publish" \
+  --cron "30 12 * * *" \
+  --tz "Asia/Seoul" \
+  --session isolated \
+  --announce --channel last \
+  --message "screen-score 저장소에서 일일 박스오피스 포스트 발행 작업을 수행해줘.
+순서:
+1) cd /home/sooya/.openclaw/workspace/screen-score
+2) python3 scripts/boxoffice_daily.py 실행
+3) 변경 파일 git add/commit (메시지: chore: publish daily boxoffice)
+4) git push origin main
+5) 실행 결과(생성 파일, 커밋해시, 푸시 여부) 요약 보고."
+```
+
+### 2) 주간 드라마 시청률 (매주 월요일 11:30, KST)
+
+```bash
+openclaw cron add \
+  --name "weekly-drama-ratings-publish" \
+  --cron "30 11 * * 1" \
+  --tz "Asia/Seoul" \
+  --session isolated \
+  --announce --channel last \
+  --message "screen-score 저장소에서 드라마 주간 포스트 발행 작업을 수행해줘.
+순서:
+1) cd /home/sooya/.openclaw/workspace/screen-score
+2) python3 scripts/drama_weekly.py 실행
+3) 변경 파일 git add/commit (메시지: chore: publish weekly drama ratings)
+4) git push origin main
+5) 실행 결과(생성 파일, 커밋해시, 푸시 여부) 요약 보고."
+```
+
+### 운영 팁
+
+- 중복 등록 방지: `openclaw cron list --all`로 기존 동일 이름 확인 후 등록
+- 비활성 잡 활성화: `openclaw cron enable <job-id>`
+- 즉시 테스트 실행: `openclaw cron run <job-id>`
+
 ## 일일 박스오피스 게시글 작성 가이드 (운영 메모)
 
 `daily-boxoffice` 포스트 작성/백필 시 추이 데이터는 아래 원칙을 따른다.
