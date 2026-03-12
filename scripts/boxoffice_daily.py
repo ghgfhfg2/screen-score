@@ -76,6 +76,28 @@ def write_csv(target_date: dt.date, rows):
     return p
 
 
+def load_cached_daily(target_date: dt.date):
+    p = DATA_DIR / f"{post_date_str(target_date)}.csv"
+    if not p.exists():
+        return []
+    out = []
+    with p.open("r", encoding="utf-8") as f:
+        rd = csv.DictReader(f)
+        for r in rd:
+            out.append(
+                {
+                    "rank": int(r.get("rank", 0) or 0),
+                    "movieCd": (r.get("movieCd") or "").strip(),
+                    "movieNm": (r.get("movieNm") or "").strip(),
+                    "audiCnt": int(r.get("audiCnt", 0) or 0),
+                    "audiAcc": int(r.get("audiAcc", 0) or 0),
+                    "salesAmt": int(r.get("salesAmt", 0) or 0),
+                    "openDt": (r.get("openDt") or "").strip(),
+                }
+            )
+    return out
+
+
 def fetch_daily_cached(target_date: dt.date, cache: dict):
     key = post_date_str(target_date)
     if key not in cache:
@@ -169,7 +191,7 @@ def fetch_full_trend(movie_cd: str, movie_name: str, open_dt: str, end_date: dt.
 
     # 비정상적으로 긴 기간 요청 방지(재개봉/오래된 개봉일 등)
     if (end_date - start).days > 730:
-        start = end_date - dt.timedelta(days=730)
+        start = end_date - dt.timedelta(days=30)
 
     out = []
     d = start
@@ -183,6 +205,54 @@ def fetch_full_trend(movie_cd: str, movie_name: str, open_dt: str, end_date: dt.
         out.append({"date": post_date_str(d), "audiCnt": val})
         d += dt.timedelta(days=1)
     return out
+
+
+def load_prev_full_trend(target_date: dt.date):
+    prev_date = target_date - dt.timedelta(days=1)
+    p = TREND_DIR / f"{post_date_str(prev_date)}.csv"
+    out = {}
+    if not p.exists():
+        return out
+
+    with p.open("r", encoding="utf-8") as f:
+        rd = csv.DictReader(f)
+        for r in rd:
+            if r.get("kind") != "full":
+                continue
+            name = (r.get("movieNm") or "").strip()
+            day = (r.get("trendDate") or "").strip()
+            if not name or not day:
+                continue
+            try:
+                cnt = int(r.get("audiCnt", 0) or 0)
+            except Exception:
+                cnt = 0
+            out.setdefault(name, []).append({"date": day, "audiCnt": cnt})
+
+    for name in out:
+        out[name].sort(key=lambda x: x["date"])
+    return out
+
+
+def append_today_to_full_trend(prev_full, target_date: dt.date, today_cnt: int):
+    day = post_date_str(target_date)
+    arr = list(prev_full or [])
+    if arr and arr[-1].get("date") == day:
+        arr[-1]["audiCnt"] = today_cnt
+    else:
+        arr.append({"date": day, "audiCnt": today_cnt})
+    return arr
+
+
+def trim_leading_zeros(arr):
+    if not arr:
+        return arr
+    idx = 0
+    while idx < len(arr) and int(arr[idx].get("audiCnt", 0) or 0) == 0:
+        idx += 1
+    if idx >= len(arr):
+        return arr[-1:]
+    return arr[idx:]
 
 
 def write_trend_csv(target_date: dt.date, trend_map):
@@ -412,8 +482,16 @@ def main():
     prev_week_date = target_date - dt.timedelta(days=7)
 
     rows = fetch_daily(target_date)
+    if not rows:
+        rows = load_cached_daily(target_date)
+
     prev_rows = fetch_daily(prev_date)
+    if not prev_rows:
+        prev_rows = load_cached_daily(prev_date)
+
     prev_week_rows = fetch_daily(prev_week_date)
+    if not prev_week_rows:
+        prev_week_rows = load_cached_daily(prev_week_date)
 
     prev_map = to_map(prev_rows)
     prev_week_map = to_map(prev_week_rows)
@@ -422,13 +500,23 @@ def main():
     movie_info_map = {}
     daily_cache = {}
     movie_info_cache = {}
+    prev_full_map = load_prev_full_trend(target_date)
+
     for r in rows:
         name = r["movieNm"]
         movie_cd = r.get("movieCd", "")
         open_dt = r.get("openDt", "")
+        today_cnt = r.get("audiCnt", 0)
+
+        prev_full = prev_full_map.get(name)
+        if prev_full:
+            full_trend = append_today_to_full_trend(prev_full, target_date, today_cnt)
+        else:
+            full_trend = fetch_full_trend(movie_cd, name, open_dt, target_date, daily_cache)
+
         trend_map[name] = {
             "week": fetch_7day_trend(movie_cd, name, target_date, daily_cache),
-            "full": fetch_full_trend(movie_cd, name, open_dt, target_date, daily_cache),
+            "full": trim_leading_zeros(full_trend),
         }
         movie_info_map[name] = fetch_movie_info(movie_cd, movie_info_cache)
 
