@@ -9,7 +9,7 @@ comments: true
 
 이번 주 드라마 시청률 요약입니다.
 
-| 통합순위 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |
+| 통합순위 | 채널 | 제목 | 시청률(%) | 전회차 대비 | 시청률 추이 |
 |---:|---|---|---:|---:|---|
 | 1 | KBS2 | 사랑을 처방해 드립니다 | 15.400 | +1.500%p | <button class="trend-btn" type="button" data-trend-id="trend-1">시청률 추이 보기</button> |
 | 2 | KBS1 | 마리와 별난 아빠들 | 9.800 | -1.700%p | <button class="trend-btn" type="button" data-trend-id="trend-2">시청률 추이 보기</button> |
