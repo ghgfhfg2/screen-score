@@ -32,13 +32,18 @@ layout: default
   {%- assign prev_post = nil -%}
   {%- assign next_post = nil -%}
   {%- if current_index >= 0 -%}
-    {%- if current_index > 0 -%}
-      {%- assign prev_index = current_index | minus: 1 -%}
+    {%- assign last_index = category_posts.size | minus: 1 -%}
+    {%- comment -%}
+      site.posts는 최신순(내림차순)이므로:
+      - 이전글: 더 과거 글 = current_index + 1
+      - 다음글: 더 최신 글 = current_index - 1
+    {%- endcomment -%}
+    {%- if current_index < last_index -%}
+      {%- assign prev_index = current_index | plus: 1 -%}
       {%- assign prev_post = category_posts[prev_index] -%}
     {%- endif -%}
-    {%- assign last_index = category_posts.size | minus: 1 -%}
-    {%- if current_index < last_index -%}
-      {%- assign next_index = current_index | plus: 1 -%}
+    {%- if current_index > 0 -%}
+      {%- assign next_index = current_index | minus: 1 -%}
       {%- assign next_post = category_posts[next_index] -%}
     {%- endif -%}
   {%- endif -%}
