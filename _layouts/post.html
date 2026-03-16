@@ -20,6 +20,52 @@ layout: default
     {{ content }}
   </div>
 
+  {%- assign nav_category = page.categories | first -%}
+  {%- assign category_posts = site.posts | where_exp: "p", "p.categories contains nav_category" -%}
+  {%- assign current_index = -1 -%}
+  {%- for p in category_posts -%}
+    {%- if p.url == page.url -%}
+      {%- assign current_index = forloop.index0 -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- assign prev_post = nil -%}
+  {%- assign next_post = nil -%}
+  {%- if current_index >= 0 -%}
+    {%- if current_index > 0 -%}
+      {%- assign prev_index = current_index | minus: 1 -%}
+      {%- assign prev_post = category_posts[prev_index] -%}
+    {%- endif -%}
+    {%- assign last_index = category_posts.size | minus: 1 -%}
+    {%- if current_index < last_index -%}
+      {%- assign next_index = current_index | plus: 1 -%}
+      {%- assign next_post = category_posts[next_index] -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- assign list_url = "/" -%}
+  {%- if nav_category == "drama-ratings" -%}
+    {%- assign list_url = "/#drama-posts" -%}
+  {%- elsif nav_category == "boxoffice" -%}
+    {%- assign list_url = "/#movie-posts" -%}
+  {%- endif -%}
+
+  <nav class="post-nav" aria-label="같은 카테고리 글 이동">
+    {%- if prev_post -%}
+      <a class="post-nav-btn" href="{{ prev_post.url | relative_url }}" rel="prev">← 이전글</a>
+    {%- else -%}
+      <span class="post-nav-btn is-disabled">← 이전글</span>
+    {%- endif -%}
+
+    <a class="post-nav-btn post-nav-list" href="{{ list_url | relative_url }}">목록</a>
+
+    {%- if next_post -%}
+      <a class="post-nav-btn" href="{{ next_post.url | relative_url }}" rel="next">다음글 →</a>
+    {%- else -%}
+      <span class="post-nav-btn is-disabled">다음글 →</span>
+    {%- endif -%}
+  </nav>
+
   {%- if page.comments and site.disqus.shortname and site.disqus.shortname != "" -%}
   <section class="post-comments">
     <h2>댓글</h2>

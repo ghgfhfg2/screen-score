@@ -23,7 +23,7 @@ title: 홈
   </div>
 </section>
 
-<section class="category-block category-drama">
+<section id="drama-posts" class="category-block category-drama">
   <div class="category-head">
     <h2>📺 드라마</h2>
     <span class="category-chip">Drama</span>
@@ -44,7 +44,7 @@ title: 홈
   </div>
 </section>
 
-<section class="category-block category-movie">
+<section id="movie-posts" class="category-block category-movie">
   <div class="category-head">
     <h2>🎬 영화</h2>
     <span class="category-chip">Movie</span>
