@@ -26,7 +26,10 @@ title: 홈
 <section id="drama-posts" class="category-block category-drama">
   <div class="category-head">
     <h2>📺 드라마</h2>
-    <span class="category-chip">Drama</span>
+    <div class="category-head-actions">
+      <a class="category-more" href="{{ '/drama-ratings/' | relative_url }}">더보기 →</a>
+      <span class="category-chip">Drama</span>
+    </div>
   </div>
   <div class="post-grid">
     {% assign drama_posts = site.posts | where_exp: "p", "p.categories contains 'drama-ratings'" %}
@@ -47,7 +50,10 @@ title: 홈
 <section id="movie-posts" class="category-block category-movie">
   <div class="category-head">
     <h2>🎬 영화</h2>
-    <span class="category-chip">Movie</span>
+    <div class="category-head-actions">
+      <a class="category-more" href="{{ '/boxoffice/' | relative_url }}">더보기 →</a>
+      <span class="category-chip">Movie</span>
+    </div>
   </div>
   <div class="post-grid">
     {% assign movie_posts = site.posts | where_exp: "p", "p.categories contains 'boxoffice'" %}

@@ -382,6 +382,30 @@ body.modern-ui {
   font-size: 22px;
 }
 
+.category-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-more {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  background: #fff;
+}
+
+.category-more:hover {
+  background: #f8fbff;
+  border-color: #b8c6e2;
+}
+
 .category-chip {
   background: var(--primary-soft);
   color: var(--primary);
@@ -390,6 +414,42 @@ body.modern-ui {
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 700;
+}
+
+.category-pagination {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pager-btn {
+  height: 36px;
+  min-width: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pager-btn:hover:not(:disabled) {
+  background: #f8fbff;
+  border-color: #b8c6e2;
+}
+
+.pager-btn.is-active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: #d8e2ff;
+}
+
+.pager-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .post-grid {
