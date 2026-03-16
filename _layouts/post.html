@@ -49,23 +49,32 @@ layout: default
   {%- endif -%}
 
   {%- assign list_url = "/" -%}
+  {%- assign list_label = "전체 목록" -%}
   {%- if nav_category == "drama-ratings" -%}
-    {%- assign list_url = "/#drama-posts" -%}
+    {%- assign list_url = "/drama-ratings/" -%}
+    {%- assign list_label = "드라마 목록" -%}
   {%- elsif nav_category == "boxoffice" -%}
-    {%- assign list_url = "/#movie-posts" -%}
+    {%- assign list_url = "/boxoffice/" -%}
+    {%- assign list_label = "박스오피스 목록" -%}
   {%- endif -%}
 
   <nav class="post-nav" aria-label="같은 카테고리 글 이동">
     {%- if prev_post -%}
-      <a class="post-nav-btn" href="{{ prev_post.url | relative_url }}" rel="prev">← 이전글</a>
+      <a class="post-nav-btn" href="{{ prev_post.url | relative_url }}" rel="prev">
+        <span class="post-nav-label">← 이전글</span>
+        <span class="post-nav-title">{{ prev_post.title }}</span>
+      </a>
     {%- else -%}
       <span class="post-nav-btn is-disabled">← 이전글</span>
     {%- endif -%}
 
-    <a class="post-nav-btn post-nav-list" href="{{ list_url | relative_url }}">목록</a>
+    <a class="post-nav-btn post-nav-list" href="{{ list_url | relative_url }}">{{ list_label }}</a>
 
     {%- if next_post -%}
-      <a class="post-nav-btn" href="{{ next_post.url | relative_url }}" rel="next">다음글 →</a>
+      <a class="post-nav-btn" href="{{ next_post.url | relative_url }}" rel="next">
+        <span class="post-nav-label">다음글 →</span>
+        <span class="post-nav-title">{{ next_post.title }}</span>
+      </a>
     {%- else -%}
       <span class="post-nav-btn is-disabled">다음글 →</span>
     {%- endif -%}
