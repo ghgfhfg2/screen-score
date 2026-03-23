@@ -8,6 +8,7 @@ import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from typing import Optional
 
 URLS = {
     "지상파": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%8B%9C%EC%B2%AD%EB%A5%A0",
@@ -41,7 +42,7 @@ ROW_RE = re.compile(
 )
 
 
-def current_week_label(today: dt.date | None = None) -> str:
+def current_week_label(today: Optional[dt.date] = None) -> str:
     today = today or dt.date.today()
     y, w, _ = today.isocalendar()
     return f"{y}-{w:02d}"
