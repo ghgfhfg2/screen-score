@@ -10,10 +10,10 @@ import urllib.request
 from pathlib import Path
 from typing import Optional
 
-URLS = {
-    "지상파": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%8B%9C%EC%B2%AD%EB%A5%A0",
-    "종합편성": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%A2%85%ED%95%A9%ED%8E%B8%EC%84%B1%EC%8B%9C%EC%B2%AD%EB%A5%A0",
-    "케이블": "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query=02%EC%9B%9423%EC%9D%BC%EC%A3%BC%20%EB%93%9C%EB%9D%BC%EB%A7%88%20%EC%BC%80%EC%9D%B4%EB%B8%94%EC%8B%9C%EC%B2%AD%EB%A5%A0",
+SEGMENT_QUERY_SUFFIX = {
+    "지상파": "드라마 시청률",
+    "종합편성": "드라마 종합편성시청률",
+    "케이블": "드라마 케이블시청률",
 }
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +48,22 @@ def current_week_label(today: Optional[dt.date] = None) -> str:
     return f"{y}-{w:02d}"
 
 
+def target_week_start(today: Optional[dt.date] = None) -> dt.date:
+    today = today or dt.date.today()
+    current_week_monday = today - dt.timedelta(days=today.weekday())
+    return current_week_monday - dt.timedelta(days=7)
+
+
+def build_urls(today: Optional[dt.date] = None):
+    week_start = target_week_start(today)
+    week_prefix = f"{week_start.month:02d}월{week_start.day:02d}일주"
+    urls = {}
+    for segment, suffix in SEGMENT_QUERY_SUFFIX.items():
+        query = urllib.parse.quote(f"{week_prefix} {suffix}")
+        urls[segment] = f"https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=blUw&qvt=0&query={query}"
+    return urls
+
+
 def fetch_text(url: str) -> str:
     req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=20) as res:
@@ -61,14 +77,18 @@ def fetch_text(url: str) -> str:
     return block_match.group(0)
 
 
+def normalize_ws(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip()
+
+
 def collect_rows(segment: str, text: str):
     seen = set()
     seen_rank = set()
     out = []
     for m in ROW_RE.finditer(text):
         rank = int(m.group(1))
-        title = html.unescape(re.sub(r"<[^>]+>", "", m.group(2))).strip()
-        channel = html.unescape(re.sub(r"<[^>]+>", "", m.group(3))).strip()
+        title = normalize_ws(html.unescape(re.sub(r"<[^>]+>", "", m.group(2))))
+        channel = normalize_ws(html.unescape(re.sub(r"<[^>]+>", "", m.group(3))))
         rating = float(m.group(4))
 
         if "재방송" in title:
@@ -222,26 +242,33 @@ def write_trend_csv(week_label: str, trend_map):
     return p
 
 
-def render_table(rows, prev_map, thumbnail_map):
-    # 3개 소스를 합쳐 시청률 기준으로 통합 순위 산정
-    sorted_rows = sorted(rows, key=lambda x: x["rating"], reverse=True)
+def render_table(rows, trend_map):
+    normalized_rows = []
+    for r in rows:
+        arr = sorted(trend_map.get(r["title"], []), key=lambda x: x["turn"])
+        latest = arr[-1]["rating"] if arr else r["rating"]
+
+        if len(arr) >= 2:
+            diff_value = latest - arr[-2]["rating"]
+            sign = "+" if diff_value > 0 else ""
+            diff = f"{sign}{diff_value:.3f}%p"
+        else:
+            diff = "-"
+
+        normalized_rows.append({**r, "display_rating": latest, "display_diff": diff})
+
+    # 표 시청률은 시청률 추이의 마지막 값 기준으로 정렬/표시
+    sorted_rows = sorted(normalized_rows, key=lambda x: x["display_rating"], reverse=True)
 
     lines = []
-    lines.append("| 통합순위 | 채널 | 제목 | 시청률(%) | 전주 대비 | 시청률 추이 |")
+    lines.append("| 통합순위 | 채널 | 제목 | 시청률(%) | 전회 대비 | 시청률 추이 |")
     lines.append("|---:|---|---|---:|---:|---|")
 
     for i, r in enumerate(sorted_rows, start=1):
-        prev = prev_map.get((r["segment"], r["title"]))
-        if prev is None:
-            diff = "NEW"
-        else:
-            d = r["rating"] - prev
-            sign = "+" if d > 0 else ""
-            diff = f"{sign}{d:.3f}%p"
-
         trend_link = f"<button class=\"trend-btn\" type=\"button\" data-trend-id=\"trend-{i}\">시청률 추이 보기</button>"
-
-        lines.append(f"| {i} | {r['channel']} | {r['title']} | {r['rating']:.3f} | {diff} | {trend_link} |")
+        lines.append(
+            f"| {i} | {r['channel']} | {r['title']} | {r['display_rating']:.3f} | {r['display_diff']} | {trend_link} |"
+        )
 
     return "\n".join(lines), sorted_rows
 
@@ -254,7 +281,7 @@ def make_post(week_label: str, prev_label: str, rows, prev_map, trend_map):
     # 이미지 컬럼 제거: 포스터 조회 로직 비활성화
     thumbnail_map = {}
 
-    table_md, sorted_rows = render_table(rows, prev_map, thumbnail_map)
+    table_md, sorted_rows = render_table(rows, trend_map)
 
     trend_sections = []
     for i, r in enumerate(sorted_rows, start=1):
@@ -332,7 +359,9 @@ def main():
     if not TMDB_API_KEY:
         print("warn: TMDB_API_KEY not set, poster lookup will be skipped")
 
-    for segment, url in URLS.items():
+    urls = build_urls()
+
+    for segment, url in urls.items():
         text = fetch_text(url)
         rows = collect_rows(segment, text)
         if not rows:
