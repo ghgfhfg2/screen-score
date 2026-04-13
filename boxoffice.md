@@ -4,7 +4,7 @@ title: 박스오피스 목록
 permalink: /boxoffice/
 ---
 
-{% assign movie_posts = site.posts | where_exp: "p", "p.categories contains 'boxoffice'" %}
+{% assign movie_posts = site.posts | where_exp: "p", "p.categories contains 'boxoffice'" | sort: 'date' | reverse %}
 
 <ul id="category-post-list" class="post-list paged-post-list">
   {% for post in movie_posts %}
