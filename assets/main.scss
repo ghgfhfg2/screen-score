@@ -116,10 +116,21 @@ body.modern-ui {
   cursor: pointer;
   padding: 0;
   text-align: left;
+  display: inline-block;
+  max-width: 250px;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .movie-info-toggle:hover {
   text-decoration: underline;
+}
+
+.page-content table th:nth-child(2),
+.page-content table td:nth-child(2) {
+  width: 250px;
+  max-width: 250px;
 }
 
 .trend-btn:hover {
