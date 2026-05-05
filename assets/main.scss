@@ -116,11 +116,14 @@ body.modern-ui {
   cursor: pointer;
   padding: 0;
   text-align: left;
-  display: inline-block;
+  display: -webkit-box;
   max-width: 250px;
-  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: keep-all;
   overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .movie-info-toggle:hover {
@@ -292,6 +295,17 @@ body.modern-ui {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+  }
+
+  .page-content table th:nth-child(2),
+  .page-content table td:nth-child(2) {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+  }
+
+  .movie-info-toggle {
+    max-width: 180px;
   }
 
   .trend-meta {
