@@ -117,6 +117,7 @@ body.modern-ui {
   padding: 0;
   text-align: left;
   display: inline-block;
+  min-width: 250px;
   max-width: 250px;
   white-space: normal;
   word-break: keep-all;
@@ -295,7 +296,12 @@ body.modern-ui {
   }
 
   .page-content table {
-    min-width: 760px;
+    min-width: 980px;
+  }
+
+  .page-content table th:nth-child(1),
+  .page-content table td:nth-child(1) {
+    min-width: 56px;
   }
 
   .page-content table th:nth-child(2),
@@ -305,7 +311,27 @@ body.modern-ui {
     max-width: 250px;
   }
 
+  .page-content table th:nth-child(3),
+  .page-content table td:nth-child(3) {
+    min-width: 180px;
+  }
+
+  .page-content table th:nth-child(4),
+  .page-content table td:nth-child(4),
+  .page-content table th:nth-child(5),
+  .page-content table td:nth-child(5),
+  .page-content table th:nth-child(6),
+  .page-content table td:nth-child(6) {
+    min-width: 120px;
+  }
+
+  .page-content table th:nth-child(7),
+  .page-content table td:nth-child(7) {
+    min-width: 220px;
+  }
+
   .movie-info-toggle {
+    min-width: 250px;
     max-width: 250px;
   }
 
