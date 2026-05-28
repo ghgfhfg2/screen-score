@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import datetime as dt
 import json
@@ -280,8 +281,8 @@ def fmt_int(n: int) -> str:
     return f"{n:,}"
 
 
-def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map, movie_info_map):
-    now = dt.datetime.now()
+def make_post(target_date: dt.date, rows, prev_map, prev_week_map, trend_map, movie_info_map, publish_dt=None):
+    now = publish_dt or dt.datetime.now()
     today = now.date().isoformat()
     post_path = POSTS_DIR / f"{today}-daily-boxoffice-{post_date_str(target_date)}.md"
 
@@ -476,8 +477,11 @@ comments: true
     return post_path
 
 
-def main():
-    target_date = dt.date.today() - dt.timedelta(days=1)
+def parse_date(value: str) -> dt.date:
+    return dt.datetime.strptime(value, "%Y-%m-%d").date()
+
+
+def build_one(target_date: dt.date, publish_dt=None):
     prev_date = target_date - dt.timedelta(days=1)
     prev_week_date = target_date - dt.timedelta(days=7)
 
@@ -522,11 +526,27 @@ def main():
 
     csv_path = write_csv(target_date, rows)
     trend_csv_path = write_trend_csv(target_date, trend_map)
-    post_path = make_post(target_date, rows, prev_map, prev_week_map, trend_map, movie_info_map)
+    post_path = make_post(target_date, rows, prev_map, prev_week_map, trend_map, movie_info_map, publish_dt=publish_dt)
 
     print(f"saved: {csv_path}")
     print(f"saved: {trend_csv_path}")
     print(f"saved: {post_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Publish daily KOBIS boxoffice post.")
+    parser.add_argument("dates", nargs="*", type=parse_date, help="target date(s), YYYY-MM-DD. Default: yesterday.")
+    args = parser.parse_args()
+
+    target_dates = args.dates or [dt.date.today() - dt.timedelta(days=1)]
+    for target_date in target_dates:
+        publish_dt = None
+        if args.dates:
+            publish_date = target_date + dt.timedelta(days=1)
+            publish_dt = dt.datetime.combine(publish_date, dt.time(17, 30))
+            if publish_dt > dt.datetime.now():
+                publish_dt = dt.datetime.now()
+        build_one(target_date, publish_dt=publish_dt)
 
 
 if __name__ == "__main__":
