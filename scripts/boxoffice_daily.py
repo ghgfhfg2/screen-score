@@ -4,8 +4,9 @@ import csv
 import datetime as dt
 import json
 import os
+import subprocess
+import time
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,21 +27,48 @@ def post_date_str(d: dt.date) -> str:
     return d.strftime("%Y-%m-%d")
 
 
+def fetch_json(url: str, attempts: int = 5):
+    last_exc = None
+    for _ in range(attempts):
+        try:
+            res = subprocess.run(
+                [
+                    "curl",
+                    "--http1.1",
+                    "-L",
+                    "--fail",
+                    "--silent",
+                    "--show-error",
+                    "--connect-timeout",
+                    "5",
+                    "--max-time",
+                    "15",
+                    "-A",
+                    "Mozilla/5.0",
+                    url,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            return json.loads(res.stdout)
+        except Exception as exc:
+            last_exc = exc
+            if attempts > 1:
+                time.sleep(2)
+    raise last_exc
+
+
 def fetch_daily(target_date: dt.date):
     query = urllib.parse.urlencode(
         {
             "key": KOBIS_API_KEY,
             "targetDt": ymd(target_date),
             "itemPerPage": 10,
-            "multiMovieYn": "",
-            "repNationCd": "",
-            "wideAreaCd": "",
         }
     )
     url = f"{KOBIS_DAILY_URL}?{query}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20) as res:
-        data = json.loads(res.read().decode("utf-8", errors="ignore"))
+    data = fetch_json(url)
 
     lst = data.get("boxOfficeResult", {}).get("dailyBoxOfficeList", [])
     rows = []
@@ -102,7 +130,8 @@ def load_cached_daily(target_date: dt.date):
 def fetch_daily_cached(target_date: dt.date, cache: dict):
     key = post_date_str(target_date)
     if key not in cache:
-        cache[key] = fetch_daily(target_date)
+        cached = load_cached_daily(target_date)
+        cache[key] = cached if cached else fetch_daily(target_date)
     return cache[key]
 
 
@@ -115,11 +144,9 @@ def fetch_movie_info(movie_cd: str, cache: dict):
 
     query = urllib.parse.urlencode({"key": KOBIS_API_KEY, "movieCd": movie_cd})
     url = f"{KOBIS_MOVIE_INFO_URL}?{query}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 
     try:
-        with urllib.request.urlopen(req, timeout=20) as res:
-            data = json.loads(res.read().decode("utf-8", errors="ignore"))
+        data = fetch_json(url, attempts=1)
         info = data.get("movieInfoResult", {}).get("movieInfo", {})
         directors = info.get("directors", []) or []
         actors = info.get("actors", []) or []
@@ -485,17 +512,17 @@ def build_one(target_date: dt.date, publish_dt=None):
     prev_date = target_date - dt.timedelta(days=1)
     prev_week_date = target_date - dt.timedelta(days=7)
 
-    rows = fetch_daily(target_date)
+    rows = load_cached_daily(target_date)
     if not rows:
-        rows = load_cached_daily(target_date)
+        rows = fetch_daily(target_date)
 
-    prev_rows = fetch_daily(prev_date)
+    prev_rows = load_cached_daily(prev_date)
     if not prev_rows:
-        prev_rows = load_cached_daily(prev_date)
+        prev_rows = fetch_daily(prev_date)
 
-    prev_week_rows = fetch_daily(prev_week_date)
+    prev_week_rows = load_cached_daily(prev_week_date)
     if not prev_week_rows:
-        prev_week_rows = load_cached_daily(prev_week_date)
+        prev_week_rows = fetch_daily(prev_week_date)
 
     prev_map = to_map(prev_rows)
     prev_week_map = to_map(prev_week_rows)
