@@ -41,6 +41,11 @@ ROW_RE = re.compile(
     flags=re.S,
 )
 
+TR_RE = re.compile(r"<tr\b[^>]*>.*?</tr>", flags=re.S)
+BLIND_RE = re.compile(r'<span class="blind">(\d+)</span>', flags=re.S)
+TD_RE = re.compile(r"<td\b[^>]*>.*?</td>", flags=re.S)
+RATE_RE = re.compile(r'<p class="rate[^"]*">([0-9]+(?:\.[0-9]+)?)%?</p>', flags=re.S)
+
 
 def current_week_label(today: Optional[dt.date] = None) -> str:
     today = today or dt.date.today()
@@ -81,17 +86,30 @@ def normalize_ws(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+def strip_tags(value: str) -> str:
+    return normalize_ws(html.unescape(re.sub(r"<[^>]+>", "", value)))
+
+
 def collect_rows(segment: str, text: str):
     seen = set()
     seen_rank = set()
     out = []
-    for m in ROW_RE.finditer(text):
-        rank = int(m.group(1))
-        title = normalize_ws(html.unescape(re.sub(r"<[^>]+>", "", m.group(2))))
-        channel = normalize_ws(html.unescape(re.sub(r"<[^>]+>", "", m.group(3))))
-        rating = float(m.group(4))
+    for tr in TR_RE.finditer(text):
+        row_html = tr.group(0)
+        rank_m = BLIND_RE.search(row_html)
+        rate_m = RATE_RE.search(row_html)
+        cells = TD_RE.findall(row_html)
+        if not rank_m or not rate_m or len(cells) < 4:
+            continue
 
-        if "재방송" in title:
+        rank = int(rank_m.group(1))
+        title_cell = strip_tags(cells[1])
+        title_anchor_m = re.search(r"<a[^>]*>(.*?)</a>", cells[1], flags=re.S)
+        title = strip_tags(title_anchor_m.group(1)) if title_anchor_m else title_cell
+        channel = strip_tags(cells[2])
+        rating = float(rate_m.group(1))
+
+        if "재방송" in title_cell:
             continue
 
         key = (rank, channel, title)
