@@ -383,8 +383,12 @@ def main():
         text = fetch_text(url)
         rows = collect_rows(segment, text)
         if not rows:
-            raise SystemExit(f"수집 실패: {segment} 패턴 매칭 결과가 없습니다.")
+            print(f"warn: {segment}에 재방송을 제외한 시청률 항목이 없습니다")
+            continue
         all_rows.extend(rows)
+
+    if not all_rows:
+        raise SystemExit("수집 실패: 모든 구간에서 시청률 항목을 찾지 못했습니다.")
 
     prev_label, prev_map = read_prev(week)
 
