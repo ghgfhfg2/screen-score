@@ -109,3 +109,12 @@ openclaw cron add \
 3. 데이터 파일 구조(`_data/*.yml` 혹은 CSV 기반)
 4. 홈/카테고리 페이지 커스터마이징
 5. GitHub Pages 배포 세팅 확정
+
+## 편집형 디자인 (2026-10-29)
+
+- 홈·공통 제호: `_layouts/default.html`, `index.html`, `assets/css/editorial.css`.
+- 홈은 Jekyll 빌드 시 카테고리별 최신 게시물의 첫 번째 순위표에서 TOP 5와 브리핑을 생성합니다. 수치/작품명을 고정하지 않습니다.
+- 드라마 원본 CSV의 주간 집계와 달리 게시 표는 최신 회차 기준이므로, 홈도 게시 표를 사용합니다. Markdown 표를 생성하는 발행 스크립트나 표 구조 변경 시 홈 추출도 확인하세요.
+- `assets/js/home.js`는 일일/누적 표시만 전환하며 당일 순위는 바꾸지 않습니다. JavaScript 없이도 기본 순위·자료 링크를 읽을 수 있습니다.
+- 기존 게시물 URL, 데이터, 추이/상세/채널 필터와 페이지네이션을 유지합니다.
+- 빌드 후 `python3 scripts/verify_editorial.py /path/to/built-site`로 최신 원문과 홈 수치·링크를 대조합니다. 스크립트는 공개 사이트에서 제외합니다.

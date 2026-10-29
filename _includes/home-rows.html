@@ -1,0 +1,28 @@
+{%- for line in include.lines -%}
+  {%- assign plain_row = line | replace: '</td>', '|' | strip_html | strip -%}
+  {%- assign normalized_row = '| ' | append: plain_row -%}
+  {%- assign row = normalized_row | split: '|' -%}
+  {%- assign rank = row[1] | strip | plus: 0 -%}
+  {%- assign prefix = normalized_row | slice: 0, 2 -%}
+  {%- if prefix == '| ' and rank > 0 and rank <= 5 -%}
+    {%- if include.kind == 'movie' -%}
+      {%- assign name = row[2] | strip_html | strip -%}
+      {%- assign daily = row[4] | strip -%}
+      {%- assign total = row[5] | strip -%}
+      {%- assign delta = row[6] | strip -%}
+      <a class="movie" href="{{ include.post.url | relative_url }}">
+        <span class="rank">0{{ rank }}</span>
+        <span class="movie-title">{{ name | escape }}<small>{{ row[3] | split: '(' | first | strip | escape }} 개봉</small></span>
+        <span class="count" data-daily="{{ daily | escape }}" data-total="{{ total | escape }}">{{ daily }}<small> 명</small></span>
+        <span class="change{% unless delta contains '+' %} down{% endunless %}">{{ delta | escape }}</span>
+      </a>
+    {%- else -%}
+      {%- assign delta = row[5] | strip -%}
+      <a class="drama" href="{{ include.post.url | relative_url }}">
+        <span class="rank">{{ rank }}</span>
+        <span class="title"><span class="channel">{{ row[2] | strip | escape }}</span>{{ row[3] | strip | escape }}</span>
+        <span class="rating">{{ row[4] | plus: 0 | round: 1 }}<small>%</small><em class="{% unless delta contains '+' %}down{% endunless %}">{{ delta | escape }}</em></span>
+      </a>
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}

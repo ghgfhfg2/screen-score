@@ -1,0 +1,113 @@
+---
+layout: home
+title: 영화 박스오피스·드라마 시청률
+description: "최신 영화 박스오피스 TOP 5와 누적 관객수, 드라마 시청률 순위와 전회 대비 변화를 확인하세요."
+---
+{%- assign movie_posts = site.posts | where_exp: "p", "p.categories contains 'boxoffice'" -%}
+{%- assign drama_posts = site.posts | where_exp: "p", "p.categories contains 'drama-ratings'" -%}
+{%- assign movie = movie_posts | first -%}
+{%- assign drama = drama_posts | first -%}
+{%- comment -%}Use the first rendered table, not raw CSV: drama tables use latest-episode ratings. Never reassign the Liquid loop variable when normalizing rows.{%- endcomment -%}
+{%- assign movie_tables = movie.content | split: '<tbody>' -%}
+{%- assign movie_table = movie_tables[1] | split: '</tbody>' | first -%}
+{%- assign movie_lines = movie_table | split: '</tr>' -%}
+{%- assign drama_tables = drama.content | split: '<tbody>' -%}
+{%- assign drama_table = drama_tables[1] | split: '</tbody>' | first -%}
+{%- assign drama_lines = drama_table | split: '</tr>' -%}
+{%- assign movie_day = movie.title | split: '(' | last | remove: ')' -%}
+{%- assign drama_week = drama.title | split: '(' | last | remove: ')' -%}
+{%- assign best_delta = -999999999 -%}
+{%- for line in movie_lines -%}
+  {%- assign plain_row = line | replace: '</td>', '|' | strip_html | strip -%}
+  {%- assign normalized_row = '| ' | append: plain_row -%}
+  {%- assign row = normalized_row | split: '|' -%}
+  {%- assign rank = row[1] | strip | plus: 0 -%}
+  {%- assign prefix = normalized_row | slice: 0, 2 -%}
+  {%- if prefix == '| ' and rank > 0 and rank <= 5 -%}
+    {%- assign delta = row[6] | strip | remove: ',' | plus: 0 -%}
+    {%- assign delta_text = row[6] | strip -%}
+    {%- if delta_text != 'NEW' and delta_text != '-' and delta > best_delta -%}
+      {%- assign best_delta = delta -%}
+      {%- assign best_delta_text = delta_text -%}
+      {%- assign best_title = row[2] | strip_html | strip -%}
+      {%- assign best_count = row[4] | strip -%}
+    {%- endif -%}
+    {%- if rank == 1 -%}
+      {%- assign top_title = row[2] | strip_html | strip -%}
+      {%- assign short_title = top_title | split: ':' | first | strip -%}
+      {%- assign top_daily = row[4] | strip -%}
+      {%- assign top_total = row[5] | strip | remove: ',' | plus: 0 -%}
+    {%- elsif rank == 2 -%}
+      {%- assign second_title = row[2] | strip_html | strip -%}
+      {%- assign second_daily = row[4] | strip | remove: ',' | plus: 0 -%}
+      {%- assign gap = top_daily | remove: ',' | minus: second_daily -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign best_rating_delta = -9999 -%}
+{%- for line in drama_lines -%}
+  {%- assign plain_row = line | replace: '</td>', '|' | strip_html | strip -%}
+  {%- assign normalized_row = '| ' | append: plain_row -%}
+  {%- assign row = normalized_row | split: '|' -%}
+  {%- assign rank = row[1] | strip | plus: 0 -%}
+  {%- assign prefix = normalized_row | slice: 0, 2 -%}
+  {%- if prefix == '| ' and rank > 0 -%}
+    {%- if rank == 1 -%}
+      {%- assign top_drama = row[3] | strip -%}
+      {%- assign top_channel = row[2] | strip -%}
+      {%- assign top_rating = row[4] | plus: 0 | round: 1 -%}
+      {%- assign top_rating_delta = row[5] | strip -%}
+    {%- endif -%}
+    {%- assign change_text = row[5] | strip -%}
+    {%- assign change_value = change_text | remove: '%p' | plus: 0 -%}
+    {%- if change_text != '-' and change_value > best_rating_delta -%}
+      {%- assign best_rating_delta = change_value -%}
+      {%- assign rising_drama = row[3] | strip -%}
+      {%- assign rising_rating = row[4] | plus: 0 | round: 1 -%}
+      {%- assign rising_delta_text = change_text -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+<section class="daily-desk" aria-label="데이터 브리핑">
+  <div class="issue-line"><span><b>데이터 브리핑</b> / BOX OFFICE & TELEVISION</span><time datetime="{{ movie_day | escape }}">{{ movie_day | replace: '-', '.' }} 집계</time></div>
+  <div class="lead-grid">
+    <article class="lead-story">
+      <div class="story-label"><span>01</span> 박스오피스</div>
+      {% if top_title %}
+      <h1>{{ short_title | escape }}, 박스오피스 1위<br>누적 관객 <em>{% if top_total >= 10000 %}{{ top_total | divided_by: 10000.0 | round: 1 }}만{% else %}<span data-number>{{ top_total }}</span>{% endif %} 명</em></h1>
+      <p class="lead-copy">‘{{ top_title | escape }}’의 일일 관객 {{ top_daily }}명.<br>{% if second_title %}2위 ‘{{ second_title | escape }}’과의 일일 관객수 차이는 <span data-number>{{ gap }}</span>명입니다.{% endif %}</p>
+      <div class="lead-bottom"><a class="text-link" href="{{ movie.url | relative_url }}">{{ movie_day | replace: '-', '.' }} 박스오피스 읽기 <span>→</span></a><span class="credit">출처 KOBIS · 전국 기준</span></div>
+      {% else %}<h1>박스오피스 기록</h1><p>새 집계 자료를 준비하고 있습니다.</p>{% endif %}
+    </article>
+    <aside class="briefs">
+      <article><div class="story-label"><span>02</span> 전일 대비 관객수</div>
+        {% if best_title %}<h2>{{ best_title | escape }}</h2><div class="brief-number">{{ best_delta_text }}<span>명</span><small>{% if best_delta > 0 %}전날보다 증가{% elsif best_delta < 0 %}전날보다 감소{% else %}전날과 동일{% endif %}</small></div><p>상위 5편 중 전일 대비 증감이 가장 큰 작품.<br>일일 관객 {{ best_count }}명을 기록했습니다.</p>{% else %}<p>비교 자료를 준비하고 있습니다.</p>{% endif %}
+      </article>
+      <article><div class="story-label"><span>03</span> 주간 드라마 시청률 · {{ drama_week | escape }}</div>
+        {% if top_drama %}<div class="tv-brief"><div><h2>{{ top_drama | split: ':' | first | strip | escape }}</h2><p>{{ top_drama | escape }} · {{ top_channel | escape }}</p></div><div class="tv-number">{{ top_rating }}<span>%</span></div></div><p>게시 자료 기준 1위 · 전회 대비 {{ top_rating_delta | escape }}</p>{% else %}<p>시청률 자료를 준비하고 있습니다.</p>{% endif %}
+      </article>
+    </aside>
+  </div>
+</section>
+<div class="content">
+  <section id="boxoffice">
+    <div class="section-head"><h2>박스오피스 <small>BOX OFFICE</small></h2><a href="{{ '/boxoffice/' | relative_url }}">전체 기록 ↗</a></div>
+    <div class="panel"><div class="panel-top"><span>{{ movie_day | replace: '-', '.' }} · 일일 순위</span><div class="tabs" role="group" aria-label="관객수 표시 기준"><button class="active" data-mode="daily" aria-pressed="true" type="button">일일 관객</button><button data-mode="total" aria-pressed="false" type="button">누적 관객</button></div></div>
+      <div class="table-head"><span>순위 / 작품</span><span id="audience-heading">일일 관객수</span><span>전일 대비</span></div>
+      <div id="movies">{% include home-rows.html lines=movie_lines kind="movie" post=movie %}</div>
+    </div>
+    <div class="source">영화진흥위원회 KOBIS · 당일 순위 고정, 관객수 표시만 전환</div>
+  </section>
+  <section id="drama">
+    <div class="section-head"><h2>드라마 시청률 <small>TV RATINGS</small></h2><a href="{{ '/drama-ratings/' | relative_url }}">전체 기록 ↗</a></div>
+    <div class="panel"><div class="panel-top"><span>{{ drama_week | escape }}주차 · 게시 자료 기준</span><span>시청률 / 전회 대비</span></div>
+      <div id="dramas">{% include home-rows.html lines=drama_lines kind="drama" post=drama %}</div>
+    </div>
+    <div class="source">닐슨코리아 · 게시물에 수록된 최신 회차 기준<br>관객수와 시청률은 서로 다른 집계 기준입니다.</div>
+  </section>
+</div>
+<section class="bottom" aria-label="데이터 하이라이트">
+  <article class="insight"><span class="tag">MOVIE / DAILY CHANGE</span><h2>{{ best_title | default: '박스오피스 기록' | escape }}<br>전일 대비 {{ best_delta_text | default: '—' }}명</h2><p>상위 5편의 전일 대비 증감 중 가장 큰 값입니다.<br>하루의 순위와 관객수 변화를 함께 확인해 보세요.</p><a href="{{ movie.url | relative_url }}">일일 박스오피스 상세 보기 ↗</a></article>
+  <article class="insight"><span class="tag">DRAMA / RATINGS CHANGE</span><h2>{{ rising_drama | default: '드라마 시청률 기록' | escape }}{% if rising_drama %} {{ rising_rating }}%<br>전회 대비 {{ rising_delta_text | escape }}{% endif %}</h2><p>비교 가능한 작품 중 전회 대비 증감이 가장 큰 작품입니다.<br>전체 순위와 작품별 추이를 함께 살펴보세요.</p><a href="{{ drama.url | relative_url }}">주간 시청률 상세 보기 ↗</a></article>
+</section>
+<section class="recent-records" aria-label="최근 발행 기록"><div><h2>최근 박스오피스 기록</h2><ul>{% for post in movie_posts limit: 3 %}<li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a><time>{{ post.date | date: '%m.%d' }} 발행</time></li>{% endfor %}</ul></div><div><h2>최근 시청률 기록</h2><ul>{% for post in drama_posts limit: 3 %}<li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a><time>{{ post.date | date: '%m.%d' }} 발행</time></li>{% endfor %}</ul></div></section>

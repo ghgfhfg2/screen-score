@@ -4,6 +4,8 @@ title: 드라마 시청률 목록
 permalink: /drama-ratings/
 ---
 
+<p class="archive-intro">주간 드라마 시청률 기록입니다. 각 게시물에서 채널별 순위, 전회 대비 변화와 작품별 회차 추이를 확인하세요.</p>
+
 {% assign drama_posts = site.posts | where_exp: "p", "p.categories contains 'drama-ratings'" %}
 
 <ul id="category-post-list" class="post-list paged-post-list">

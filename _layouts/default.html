@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html lang="{{ page.lang | default: site.lang | default: 'ko' }}">
-
 {%- include head.html -%}
-
-<body class="modern-ui">
-  {%- include header.html -%}
-
-  <main class="page-content" aria-label="Content">
-    <div class="wrapper">
-      {{ content }}
-    </div>
-  </main>
-
-  {%- include footer.html -%}
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-  <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
-</body>
-
-</html>
+<body class="editorial-site">
+<link rel="stylesheet" href="{{ '/assets/css/editorial.css' | relative_url }}?v=20261029">
+<div class="wrap">
+  <header class="masthead">
+    <div class="edition-label">영화와 드라마의<br>데이터 기록실</div>
+    <a class="brand" href="{{ '/' | relative_url }}">스크린스코어<span>SCREEN SCORE</span></a>
+    <a class="about-link" href="{{ '/about/' | relative_url }}">데이터 안내 ↗</a>
+  </header>
+  <div class="nav-row">
+    <nav class="main-nav" aria-label="주 메뉴">
+      <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>전체</a>
+      <a href="{{ '/boxoffice/' | relative_url }}"{% if page.url contains '/boxoffice/' %} aria-current="page"{% endif %}>박스오피스</a>
+      <a href="{{ '/drama-ratings/' | relative_url }}"{% if page.url contains '/drama-ratings/' %} aria-current="page"{% endif %}>드라마 시청률</a>
+      <a class="mobile-about" href="{{ '/about/' | relative_url }}">소개</a>
+    </nav>
+    <span>영화진흥위원회 KOBIS · 닐슨코리아</span>
+  </div>
+  <main id="main-content" class="site-main{% if page.layout == 'home' %} home-main{% else %} inner-main{% endif %}">{{ content }}</main>
+  <footer class="site-colophon">
+    <div><a href="{{ '/' | relative_url }}"><strong>스크린스코어</strong></a><br>스크린의 기록, 데이터의 이야기.</div>
+    <div><a href="{{ '/about/' | relative_url }}">소개 및 데이터 기준 ↗</a><a href="{{ '/feed.xml' | relative_url }}">RSS ↗</a><br>집계일과 발행일은 다를 수 있습니다. 최종 수치는 원출처를 확인해 주세요.</div>
+  </footer>
+</div>
+{% if page.layout == 'post' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
+{% endif %}
+{% if page.layout == 'home' %}<script src="{{ '/assets/js/home.js' | relative_url }}?v=20261029" defer></script>{% endif %}
+</body></html>

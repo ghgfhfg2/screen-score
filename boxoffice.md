@@ -4,6 +4,8 @@ title: 박스오피스 목록
 permalink: /boxoffice/
 ---
 
+<p class="archive-intro">전국 일일 박스오피스 순위와 관객수 변화를 날짜별로 확인하세요. 각 기록에서 영화 상세정보와 전체 관객수 추이를 볼 수 있습니다.</p>
+
 {% assign movie_posts = site.posts | where_exp: "p", "p.categories contains 'boxoffice'" | sort: 'date' | reverse %}
 
 <ul id="category-post-list" class="post-list paged-post-list">

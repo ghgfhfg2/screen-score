@@ -1,5 +1,5 @@
-title: "Drama & Movie Stats"
-description: "드라마/영화 데이터와 인사이트를 다루는 통계형 블로그"
+title: "스크린스코어"
+description: "일일 박스오피스 순위와 관객수 추이, 주간 드라마 시청률을 기록하는 스크린스코어입니다."
 baseurl: ""
 url: "https://screen-score.sooyadev.com"
 lang: ko-KR
@@ -35,3 +35,11 @@ defaults:
 
 # 나중에 통계 포스트 카테고리 확장하기 쉽게 초기 카테고리 제안
 # 예) drama-ratings, ott-rankings, boxoffice, trends
+
+# Keep publishing scripts and local tooling out of the public site.
+exclude:
+  - scripts
+  - templates
+  - README.md
+  - Gemfile
+  - Gemfile.lock
