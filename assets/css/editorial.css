@@ -22,3 +22,4 @@ body.editorial-site{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothi
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 
 .home-main .rating em.down{color:var(--muted)}
+.home-main .daily-desk h1{word-break:keep-all;overflow-wrap:break-word}
